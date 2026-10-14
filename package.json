@@ -6,11 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "preview": "node scripts/cf-build.mjs && opennextjs-cloudflare preview",
+    "deploy": "node scripts/cf-build.mjs && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "cf:build": "node scripts/cf-build.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",
-    "next": "16.4.0",
+    "@opennextjs/cloudflare": "^1.20.11",
+    "next": "^16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1",
@@ -22,8 +27,12 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "^16.3.8",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.151.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
