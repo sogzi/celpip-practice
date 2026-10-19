@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   if (!hasApiKey()) {
     const result: GradeResult = {
       mode: "offline",
-      reason: "No Anthropic API key is configured, so only the automatic checks ran. Add ANTHROPIC_API_KEY to .env.local to get a CELPIP level and detailed feedback.",
+      reason: "AI scoring isn't set up on this server yet (no Anthropic API key), so only the automatic checks ran.",
       checks,
     };
     return Response.json(result);

@@ -12,7 +12,7 @@ export async function ApiBadge() {
       }`}
     >
       <span className={`size-1.5 rounded-full ${aiReady ? "bg-good" : "bg-warn"}`} aria-hidden />
-      {aiReady ? `AI scoring on · ${MODEL}` : "AI scoring off — add ANTHROPIC_API_KEY to .env.local"}
+      {aiReady ? `AI scoring on · ${MODEL}` : "AI scoring off — no API key configured"}
     </div>
   );
 }
