@@ -7,6 +7,7 @@ import { newId, saveAttempt } from "@/lib/history";
 import type { GradeRequest, GradeResult } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { PromptPicker } from "./PromptPicker";
+import { useGeneratedPrompts } from "./useGeneratedPrompts";
 import { PromptCard, btn, formatClock } from "./ui";
 import { useCountdown } from "./useCountdown";
 
@@ -24,7 +25,9 @@ export function WritingSession({ taskId }: { taskId: string }) {
   const startedAt = useRef(0);
   const timer = useCountdown(() => setTimeUp(true));
 
-  const prompt = task.prompts.find((p) => p.id === promptId)!;
+  const promptList = useGeneratedPrompts("writing", taskId, task.prompts);
+  const prompts = promptList.prompts;
+  const prompt = prompts.find((p) => p.id === promptId)!;
   const words = countWords(text);
   const inRange = words >= task.minWords && words <= task.maxWords;
   const needsChoice = !!prompt.options;
@@ -52,7 +55,7 @@ export function WritingSession({ taskId }: { taskId: string }) {
     setPhase("grading");
     setError(undefined);
     const minutesUsed = (Date.now() - startedAt.current) / 60000;
-    const body: GradeRequest = { kind: "writing", taskId, promptId, response: text, choice, minutesUsed };
+    const body: GradeRequest = { kind: "writing", taskId, promptId, prompt: promptId.startsWith("ai-") ? prompt : undefined, response: text, choice, minutesUsed };
     try {
       const res = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
@@ -73,7 +76,18 @@ export function WritingSession({ taskId }: { taskId: string }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <PromptPicker prompts={task.prompts} value={promptId} onChange={reset} disabled={phase === "writing" || phase === "grading"} />
+        <PromptPicker
+          prompts={prompts}
+          value={promptId}
+          onChange={reset}
+          disabled={phase === "writing" || phase === "grading"}
+          onGenerate={async () => {
+            const p = await promptList.generate();
+            if (p) reset(p.id);
+          }}
+          generating={promptList.generating}
+          error={promptList.error}
+        />
         {phase !== "ready" && phase !== "done" && (
           <div
             className={`self-start sm:self-auto font-mono text-lg tabular-nums px-3 py-1.5 rounded-lg border ${
@@ -138,8 +152,18 @@ export function WritingSession({ taskId }: { taskId: string }) {
           </details>
           <FeedbackView result={result} />
           <div className="flex flex-wrap gap-2">
-            <button className={btn.primary} onClick={() => reset(task.prompts[(task.prompts.indexOf(prompt) + 1) % task.prompts.length].id)}>
+            <button className={btn.primary} onClick={() => reset(prompts[(prompts.indexOf(prompt) + 1) % prompts.length].id)}>
               Try the next prompt
+            </button>
+            <button
+              className={btn.secondary}
+              disabled={promptList.generating}
+              onClick={async () => {
+                const p = await promptList.generate();
+                if (p) reset(p.id);
+              }}
+            >
+              {promptList.generating ? "Writing a new prompt…" : "✦ Generate new prompt"}
             </button>
             <button className={btn.secondary} onClick={() => reset()}>Retry this prompt</button>
             <Link href="/history" className={btn.secondary}>View progress</Link>

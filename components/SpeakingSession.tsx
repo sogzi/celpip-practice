@@ -7,6 +7,7 @@ import { newId, saveAttempt } from "@/lib/history";
 import type { GradeRequest, GradeResult } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { PromptPicker } from "./PromptPicker";
+import { useGeneratedPrompts } from "./useGeneratedPrompts";
 import { Card, PromptCard, btn, formatClock } from "./ui";
 import { useCountdown } from "./useCountdown";
 import { useRecorder } from "./useRecorder";
@@ -43,7 +44,9 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
   const [duration, setDuration] = useState(0);
   const recorder = useRecorder();
 
-  const prompt = task.prompts.find((p) => p.id === promptId)!;
+  const promptList = useGeneratedPrompts("speaking", taskId, task.prompts);
+  const prompts = promptList.prompts;
+  const prompt = prompts.find((p) => p.id === promptId)!;
   const needsChoice = !!prompt.options;
   const isScene = task.number === 3 || task.number === 4 || task.number === 8;
 
@@ -85,7 +88,7 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
     setPhase("grading");
     setError(undefined);
     const body: GradeRequest = {
-      kind: "speaking", taskId, promptId, response: recorder.transcript, choice: needsChoice ? choice ?? "" : undefined,
+      kind: "speaking", taskId, promptId, prompt: promptId.startsWith("ai-") ? prompt : undefined, response: recorder.transcript, choice: needsChoice ? choice ?? "" : undefined,
       durationSec: duration,
     };
     try {
@@ -110,7 +113,18 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
 
   return (
     <div className="space-y-6">
-      <PromptPicker prompts={task.prompts} value={promptId} onChange={reset} disabled={busy} />
+      <PromptPicker
+          prompts={prompts}
+          value={promptId}
+          onChange={reset}
+          disabled={busy}
+          onGenerate={async () => {
+            const p = await promptList.generate();
+            if (p) reset(p.id);
+          }}
+          generating={promptList.generating}
+          error={promptList.error}
+        />
 
       {phase === "ready" ? (
         <Card className="p-5 sm:p-6">
@@ -207,8 +221,18 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
           </Card>
           <FeedbackView result={result} />
           <div className="flex flex-wrap gap-2">
-            <button className={btn.primary} onClick={() => reset(task.prompts[(task.prompts.indexOf(prompt) + 1) % task.prompts.length].id)}>
+            <button className={btn.primary} onClick={() => reset(prompts[(prompts.indexOf(prompt) + 1) % prompts.length].id)}>
               Try the next prompt
+            </button>
+            <button
+              className={btn.secondary}
+              disabled={promptList.generating}
+              onClick={async () => {
+                const p = await promptList.generate();
+                if (p) reset(p.id);
+              }}
+            >
+              {promptList.generating ? "Writing a new prompt…" : "✦ Generate new prompt"}
             </button>
             <button className={btn.secondary} onClick={() => reset()}>Retry this prompt</button>
             <Link href="/history" className={btn.secondary}>View progress</Link>

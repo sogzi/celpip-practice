@@ -1,4 +1,4 @@
-import { getSpeakingTask, getWritingTask } from "@/lib/celpip";
+import { resolvePrompt } from "@/lib/prompts";
 import { countWords, runChecks } from "@/lib/checks";
 import { MODEL, explainError, gradeWithClaude, hasApiKey } from "@/lib/grader";
 import type { GradeRequest, GradeResult } from "@/lib/types";
@@ -11,8 +11,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const task = req.kind === "writing" ? getWritingTask(req.taskId) : getSpeakingTask(req.taskId);
-  if (!task || !task.prompts.some((p) => p.id === req.promptId)) {
+  if ((req.kind !== "writing" && req.kind !== "speaking") || !resolvePrompt(req.kind, req.taskId, req.promptId, req.prompt)) {
     return Response.json({ error: "Unknown task or prompt." }, { status: 400 });
   }
   if (typeof req.response !== "string" || countWords(req.response) < 10) {

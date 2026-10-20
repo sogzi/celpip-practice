@@ -11,6 +11,7 @@ import {
   type Prompt,
 } from "./celpip";
 import { countWords } from "./checks";
+import { resolvePrompt } from "./prompts";
 import type { Feedback, GradeRequest } from "./types";
 
 export const MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-5-5";
@@ -54,7 +55,7 @@ function buildPrompt(req: GradeRequest) {
   const words = countWords(req.response);
   if (req.kind === "writing") {
     const task = getWritingTask(req.taskId)!;
-    const prompt = task.prompts.find((p) => p.id === req.promptId)!;
+    const prompt = resolvePrompt("writing", req.taskId, req.promptId, req.prompt)!;
     return {
       criteria: WRITING_CRITERIA,
       content: [
@@ -68,7 +69,7 @@ function buildPrompt(req: GradeRequest) {
     };
   }
   const task = getSpeakingTask(req.taskId)!;
-  const prompt = task.prompts.find((p) => p.id === req.promptId)!;
+  const prompt = resolvePrompt("speaking", req.taskId, req.promptId, req.prompt)!;
   const dur = req.durationSec ?? 0;
   return {
     criteria: SPEAKING_CRITERIA,

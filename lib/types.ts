@@ -1,10 +1,12 @@
-import type { Kind } from "./celpip";
+import type { Kind, Prompt } from "./celpip";
 import type { Skill, TestSet } from "./rl";
 
 export interface GradeRequest {
   kind: Kind | Skill;
   taskId: string;
   promptId: string;
+  /** The prompt itself, when it was AI-generated rather than built in. */
+  prompt?: Prompt;
   /** Essay text, or the speech transcript. */
   response: string;
   /** Option chosen for Writing Task 2 / Speaking Tasks 5 & 6. */
