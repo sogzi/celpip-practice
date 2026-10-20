@@ -61,3 +61,10 @@ body {
 ::selection {
   background: var(--accent-soft);
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

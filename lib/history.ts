@@ -13,7 +13,7 @@ export function loadAttempts(): Attempt[] {
 
 export function saveAttempt(a: Attempt) {
   try {
-    const all = [a, ...loadAttempts()].slice(0, 200);
+    const all = [a, ...loadAttempts()].slice(0, 100);
     localStorage.setItem(KEY, JSON.stringify(all));
     notify();
   } catch {

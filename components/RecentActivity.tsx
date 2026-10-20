@@ -14,7 +14,7 @@ export function RecentActivity() {
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {attempts.map((a) => {
-          const lv = a.result.mode === "ai" ? a.result.feedback.overallLevel : null;
+          const lv = a.result.mode === "ai" ? a.result.feedback.overallLevel : a.result.mode === "objective" ? a.result.level : null;
           return (
             <Card key={a.id} className="p-4">
               <p className="text-xs text-muted truncate">{a.taskName}</p>

@@ -1,7 +1,8 @@
 import type { Kind } from "./celpip";
+import type { Skill, TestSet } from "./rl";
 
 export interface GradeRequest {
-  kind: Kind;
+  kind: Kind | Skill;
   taskId: string;
   promptId: string;
   /** Essay text, or the speech transcript. */
@@ -30,14 +31,26 @@ export interface Feedback {
   improvedVersion: string;
 }
 
+export interface ObjectiveResult {
+  mode: "objective";
+  skill: Skill;
+  correct: number;
+  total: number;
+  level: number;
+  /** The tests taken and the chosen option per question id, for review. */
+  sets: TestSet[];
+  answers: Record<string, number>;
+}
+
 export type GradeResult =
   | { mode: "ai"; model: string; feedback: Feedback; checks: Check[] }
-  | { mode: "offline"; reason: string; checks: Check[] };
+  | { mode: "offline"; reason: string; checks: Check[] }
+  | ObjectiveResult;
 
 export interface Attempt {
   id: string;
   createdAt: string;
-  kind: Kind;
+  kind: Kind | Skill;
   taskId: string;
   taskName: string;
   promptTitle: string;

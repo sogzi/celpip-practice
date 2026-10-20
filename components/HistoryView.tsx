@@ -8,7 +8,9 @@ import { Card, btn } from "./ui";
 import { useAttempts } from "./useAttempts";
 
 function levelOf(a: Attempt) {
-  return a.result.mode === "ai" ? a.result.feedback.overallLevel : null;
+  if (a.result.mode === "ai") return a.result.feedback.overallLevel;
+  if (a.result.mode === "objective") return a.result.level;
+  return null;
 }
 
 function Trend({ attempts, label }: { attempts: Attempt[]; label: string }) {
@@ -70,10 +72,10 @@ export function HistoryView() {
     return (
       <Card className="p-8 text-center">
         <p className="font-medium">No attempts yet</p>
-        <p className="mt-1 text-sm text-muted">Finish a writing or speaking task and it will show up here.</p>
+        <p className="mt-1 text-sm text-muted">Finish any practice task and it will show up here.</p>
         <div className="mt-5 flex justify-center gap-2">
-          <Link href="/writing" className={btn.primary}>Start writing</Link>
-          <Link href="/speaking" className={btn.secondary}>Start speaking</Link>
+          <Link href="/reading" className={btn.primary}>Start reading</Link>
+          <Link href="/listening" className={btn.secondary}>Start listening</Link>
         </div>
       </Card>
     );
@@ -82,6 +84,8 @@ export function HistoryView() {
   return (
     <div className="space-y-8">
       <div className="grid md:grid-cols-2 gap-5">
+        <Trend label="Reading" attempts={attempts.filter((a) => a.kind === "reading")} />
+        <Trend label="Listening" attempts={attempts.filter((a) => a.kind === "listening")} />
         <Trend label="Writing" attempts={attempts.filter((a) => a.kind === "writing")} />
         <Trend label="Speaking" attempts={attempts.filter((a) => a.kind === "speaking")} />
       </div>
@@ -111,8 +115,10 @@ export function HistoryView() {
                     <span className="min-w-0 flex-1">
                       <span className="block font-medium truncate">{a.taskName}</span>
                       <span className="block text-sm text-muted truncate">
-                        {a.promptTitle} · {a.wordCount} words
-                        {a.durationSec ? ` · ${Math.round(a.durationSec)}s` : ""}
+                        {a.promptTitle} ·{" "}
+                        {a.result.mode === "objective"
+                          ? `${a.result.correct}/${a.result.total} correct`
+                          : `${a.wordCount} words${a.durationSec ? ` · ${Math.round(a.durationSec)}s` : ""}`}
                       </span>
                     </span>
                     <span className="text-xs text-muted shrink-0 hidden sm:block">
@@ -121,10 +127,12 @@ export function HistoryView() {
                   </button>
                   {open && (
                     <div className="border-t border-line p-4 sm:p-5 space-y-5">
-                      <details>
-                        <summary className="cursor-pointer text-sm font-medium">Your {a.kind === "writing" ? "response" : "transcript"}</summary>
-                        <p className="mt-3 whitespace-pre-wrap leading-relaxed text-[15px]">{a.response}</p>
-                      </details>
+                      {a.result.mode !== "objective" && (
+                        <details>
+                          <summary className="cursor-pointer text-sm font-medium">Your {a.kind === "writing" ? "response" : "transcript"}</summary>
+                          <p className="mt-3 whitespace-pre-wrap leading-relaxed text-[15px]">{a.response}</p>
+                        </details>
+                      )}
                       <FeedbackView result={a.result} />
                       <button className="text-sm text-muted hover:text-accent" onClick={() => deleteAttempt(a.id)}>
                         Delete this attempt
