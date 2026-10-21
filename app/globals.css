@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --bg: #f8f7f4;
   --surface: #ffffff;
   --surface-2: #f1efea;
@@ -16,8 +17,10 @@
   --warn-soft: #fdf1dd;
 }
 
+/* Dark theme: follows the device setting unless the user picked a theme (data-theme on <html>). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --bg: #121110;
     --surface: #1b1a18;
     --surface-2: #24221f;
@@ -32,6 +35,23 @@
     --warn: #f0b45a;
     --warn-soft: #2e2313;
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121110;
+  --surface: #1b1a18;
+  --surface-2: #24221f;
+  --ink: #f3f0ec;
+  --muted: #a39d96;
+  --line: #2f2c29;
+  --accent: #f05264;
+  --accent-ink: #1b0a0d;
+  --accent-soft: #3a1a1f;
+  --good: #5cc995;
+  --good-soft: #15291f;
+  --warn: #f0b45a;
+  --warn-soft: #2e2313;
 }
 
 @theme inline {
