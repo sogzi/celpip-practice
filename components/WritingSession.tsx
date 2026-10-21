@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { getWritingTask } from "@/lib/celpip";
 import { countWords } from "@/lib/checks";
 import { newId, saveAttempt } from "@/lib/history";
-import type { GradeRequest, GradeResult } from "@/lib/types";
+import type { ExamHooks, GradeRequest, GradeResult } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { PromptPicker } from "./PromptPicker";
 import { useGeneratedPrompts } from "./useGeneratedPrompts";
@@ -13,9 +13,9 @@ import { useCountdown } from "./useCountdown";
 
 type Phase = "ready" | "writing" | "grading" | "done";
 
-export function WritingSession({ taskId }: { taskId: string }) {
+export function WritingSession({ taskId, exam }: { taskId: string; exam?: ExamHooks }) {
   const task = getWritingTask(taskId)!;
-  const [promptId, setPromptId] = useState(task.prompts[0].id);
+  const [promptId, setPromptId] = useState(exam?.prompt.id ?? task.prompts[0].id);
   const [phase, setPhase] = useState<Phase>("ready");
   const [text, setText] = useState("");
   const [choice, setChoice] = useState<string>();
@@ -23,10 +23,14 @@ export function WritingSession({ taskId }: { taskId: string }) {
   const [result, setResult] = useState<GradeResult>();
   const [error, setError] = useState<string>();
   const startedAt = useRef(0);
-  const timer = useCountdown(() => setTimeUp(true));
+  const timer = useCountdown(() => {
+    setTimeUp(true);
+    // In the exam, time's up means the answer is submitted as it stands.
+    if (exam) submit();
+  });
 
   const promptList = useGeneratedPrompts("writing", taskId, task.prompts);
-  const prompts = promptList.prompts;
+  const prompts = exam ? [exam.prompt] : promptList.prompts;
   const prompt = prompts.find((p) => p.id === promptId)!;
   const words = countWords(text);
   const inRange = words >= task.minWords && words <= task.maxWords;
@@ -52,10 +56,11 @@ export function WritingSession({ taskId }: { taskId: string }) {
 
   async function submit() {
     timer.stop();
-    setPhase("grading");
-    setError(undefined);
     const minutesUsed = (Date.now() - startedAt.current) / 60000;
     const body: GradeRequest = { kind: "writing", taskId, promptId, prompt: promptId.startsWith("ai-") ? prompt : undefined, response: text, choice, minutesUsed };
+    if (exam) return exam.onSubmit(body);
+    setPhase("grading");
+    setError(undefined);
     try {
       const res = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
@@ -76,7 +81,7 @@ export function WritingSession({ taskId }: { taskId: string }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <PromptPicker
+        {exam ? <span /> : <PromptPicker
           prompts={prompts}
           value={promptId}
           onChange={reset}
@@ -87,7 +92,7 @@ export function WritingSession({ taskId }: { taskId: string }) {
           }}
           generating={promptList.generating}
           error={promptList.error}
-        />
+        />}
         {phase !== "ready" && phase !== "done" && (
           <div
             className={`self-start sm:self-auto font-mono text-lg tabular-nums px-3 py-1.5 rounded-lg border ${
@@ -133,10 +138,24 @@ export function WritingSession({ taskId }: { taskId: string }) {
               {words} words <span className="text-muted">· target {task.minWords}–{task.maxWords}</span>
             </p>
             <div className="flex gap-2">
-              <button className={btn.secondary} onClick={() => reset()} disabled={phase === "grading"}>Start over</button>
-              <button className={btn.primary} onClick={submit} disabled={phase === "grading" || words < 10 || (needsChoice && !choice)}>
-                {phase === "grading" ? "Scoring…" : "Submit for scoring"}
-              </button>
+              {exam ? (
+                <button
+                  className={btn.primary}
+                  onClick={() => {
+                    if (words < task.minWords && !confirm(`You've written ${words} words (target ${task.minWords}–${task.maxWords}). Submit anyway?`)) return;
+                    submit();
+                  }}
+                >
+                  Submit and continue →
+                </button>
+              ) : (
+                <>
+                  <button className={btn.secondary} onClick={() => reset()} disabled={phase === "grading"}>Start over</button>
+                  <button className={btn.primary} onClick={submit} disabled={phase === "grading" || words < 10 || (needsChoice && !choice)}>
+                    {phase === "grading" ? "Scoring…" : "Submit for scoring"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
           <p className="text-xs text-muted">Spell check is turned off, as in the real test.</p>

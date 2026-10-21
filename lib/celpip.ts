@@ -77,6 +77,14 @@ export const LEVEL_LABELS: Record<number, string> = {
   1: "Minimal proficiency",
 };
 
+/** CELPIP levels 4–10 line up with the same CLB level. */
+export function clbLabel(level: number) {
+  const l = Math.round(level);
+  if (l >= 10) return "CLB 10+";
+  if (l < 4) return "below CLB 4";
+  return `CLB ${l}`;
+}
+
 export function levelLabel(level: number) {
   return LEVEL_LABELS[Math.max(1, Math.min(12, Math.round(level)))];
 }

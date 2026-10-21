@@ -4,7 +4,7 @@ import { useState } from "react";
 import { getSpeakingTask } from "@/lib/celpip";
 import { countWords } from "@/lib/checks";
 import { newId, saveAttempt } from "@/lib/history";
-import type { GradeRequest, GradeResult } from "@/lib/types";
+import type { ExamHooks, GradeRequest, GradeResult } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { PromptPicker } from "./PromptPicker";
 import { useGeneratedPrompts } from "./useGeneratedPrompts";
@@ -34,9 +34,9 @@ function TimerBar({ label, remaining, total, tone }: { label: string; remaining:
   );
 }
 
-export function SpeakingSession({ taskId }: { taskId: string }) {
+export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamHooks }) {
   const task = getSpeakingTask(taskId)!;
-  const [promptId, setPromptId] = useState(task.prompts[0].id);
+  const [promptId, setPromptId] = useState(exam?.prompt.id ?? task.prompts[0].id);
   const [phase, setPhase] = useState<Phase>("ready");
   const [choice, setChoice] = useState<string>();
   const [result, setResult] = useState<GradeResult>();
@@ -45,7 +45,7 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
   const recorder = useRecorder();
 
   const promptList = useGeneratedPrompts("speaking", taskId, task.prompts);
-  const prompts = promptList.prompts;
+  const prompts = exam ? [exam.prompt] : promptList.prompts;
   const prompt = prompts.find((p) => p.id === promptId)!;
   const needsChoice = !!prompt.options;
   const isScene = task.number === 3 || task.number === 4 || task.number === 8;
@@ -85,12 +85,16 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
   }
 
   async function submit() {
-    setPhase("grading");
-    setError(undefined);
     const body: GradeRequest = {
       kind: "speaking", taskId, promptId, prompt: promptId.startsWith("ai-") ? prompt : undefined, response: recorder.transcript, choice: needsChoice ? choice ?? "" : undefined,
       durationSec: duration,
     };
+    if (exam) {
+      recorder.release();
+      return exam.onSubmit(body);
+    }
+    setPhase("grading");
+    setError(undefined);
     try {
       const res = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
@@ -113,7 +117,7 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
 
   return (
     <div className="space-y-6">
-      <PromptPicker
+      {!exam && <PromptPicker
           prompts={prompts}
           value={promptId}
           onChange={reset}
@@ -124,7 +128,7 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
           }}
           generating={promptList.generating}
           error={promptList.error}
-        />
+        />}
 
       {phase === "ready" ? (
         <Card className="p-5 sm:p-6">
@@ -132,7 +136,7 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
           <ol className="mt-3 space-y-2 text-sm leading-relaxed text-muted list-decimal pl-5">
             <li>Click start. The prompt appears and you get <b className="text-ink">{task.prepSeconds} seconds</b> to prepare{needsChoice ? " and choose an option" : ""}.</li>
             <li>Recording starts automatically. You have <b className="text-ink">{task.speakSeconds} seconds</b> to speak.</li>
-            <li>Review your recording and transcript, then submit it for scoring.</li>
+            <li>{exam ? "Check the transcript for recognition mistakes, then continue to the next task." : "Review your recording and transcript, then submit it for scoring."}</li>
           </ol>
           {!recorder.supportsTranscription && (
             <p className="mt-4 rounded-lg bg-warn-soft text-warn p-3 text-sm">
@@ -200,10 +204,16 @@ export function SpeakingSession({ taskId }: { taskId: string }) {
           </div>
           {needsChoice && !choice && <p className="text-sm text-warn">You didn&apos;t choose an option during preparation; this will count against Task Fulfillment.</p>}
           <div className="flex flex-wrap gap-2">
-            <button className={btn.primary} onClick={submit} disabled={phase === "grading" || countWords(recorder.transcript) < 10}>
-              {phase === "grading" ? "Scoring…" : "Submit for scoring"}
-            </button>
-            <button className={btn.secondary} onClick={() => reset()} disabled={phase === "grading"}>Re-record</button>
+            {exam ? (
+              <button className={btn.primary} onClick={submit}>Submit and continue →</button>
+            ) : (
+              <>
+                <button className={btn.primary} onClick={submit} disabled={phase === "grading" || countWords(recorder.transcript) < 10}>
+                  {phase === "grading" ? "Scoring…" : "Submit for scoring"}
+                </button>
+                <button className={btn.secondary} onClick={() => reset()} disabled={phase === "grading"}>Re-record</button>
+              </>
+            )}
           </div>
           {countWords(recorder.transcript) < 10 && phase === "review" && (
             <p className="text-sm text-muted">At least 10 words are needed for scoring.</p>

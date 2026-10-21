@@ -1,17 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { deleteAttempt } from "@/lib/history";
+import { attemptLevel, deleteAttempt } from "@/lib/history";
+import { ExamReport } from "./ExamReport";
 import type { Attempt } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { Card, btn } from "./ui";
 import { useAttempts } from "./useAttempts";
 
-function levelOf(a: Attempt) {
-  if (a.result.mode === "ai") return a.result.feedback.overallLevel;
-  if (a.result.mode === "objective") return a.result.level;
-  return null;
-}
+const levelOf = attemptLevel;
 
 function Trend({ attempts, label }: { attempts: Attempt[]; label: string }) {
   const scored = attempts.filter((a) => levelOf(a) !== null).slice(0, 12).reverse();
@@ -64,6 +61,8 @@ function Trend({ attempts, label }: { attempts: Attempt[]; label: string }) {
   );
 }
 
+const fmt = (n: number | null) => (n === null ? "–" : String(Math.round(n)));
+
 export function HistoryView() {
   const attempts = useAttempts();
   const [openId, setOpenId] = useState<string>();
@@ -84,6 +83,9 @@ export function HistoryView() {
   return (
     <div className="space-y-8">
       <div className="grid md:grid-cols-2 gap-5">
+        <div className="md:col-span-2">
+          <Trend label="Mock exams (average level)" attempts={attempts.filter((a) => a.kind === "exam")} />
+        </div>
         <Trend label="Reading" attempts={attempts.filter((a) => a.kind === "reading")} />
         <Trend label="Listening" attempts={attempts.filter((a) => a.kind === "listening")} />
         <Trend label="Writing" attempts={attempts.filter((a) => a.kind === "writing")} />
@@ -110,13 +112,15 @@ export function HistoryView() {
                         lv ? "bg-accent-soft text-accent" : "bg-surface-2 text-muted"
                       }`}
                     >
-                      {lv ?? "–"}
+                      {lv === null ? "–" : a.result.mode === "exam" ? lv.toFixed(1) : lv}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block font-medium truncate">{a.taskName}</span>
                       <span className="block text-sm text-muted truncate">
                         {a.promptTitle} ·{" "}
-                        {a.result.mode === "objective"
+                        {a.result.mode === "exam"
+                          ? `L ${fmt(a.result.levels.listening)} · R ${fmt(a.result.levels.reading)} · W ${fmt(a.result.levels.writing)} · S ${fmt(a.result.levels.speaking)}`
+                          : a.result.mode === "objective"
                           ? `${a.result.correct}/${a.result.total} correct`
                           : `${a.wordCount} words${a.durationSec ? ` · ${Math.round(a.durationSec)}s` : ""}`}
                       </span>
@@ -133,7 +137,7 @@ export function HistoryView() {
                           <p className="mt-3 whitespace-pre-wrap leading-relaxed text-[15px]">{a.response}</p>
                         </details>
                       )}
-                      <FeedbackView result={a.result} />
+                      {a.result.mode === "exam" ? <ExamReport result={a.result} showActions={false} /> : <FeedbackView result={a.result} />}
                       <button className="text-sm text-muted hover:text-accent" onClick={() => deleteAttempt(a.id)}>
                         Delete this attempt
                       </button>

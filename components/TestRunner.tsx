@@ -22,11 +22,23 @@ import { useSpeech } from "./useSpeech";
 type Phase = "setup" | "loading" | "running" | "results";
 type GenStatus = { partId: string; state: "pending" | "done" | "error"; error?: string };
 
-export function TestRunner({ skill, partIds }: { skill: Skill; partIds: string[] }) {
+export function TestRunner({
+  skill,
+  partIds,
+  presetSets,
+  onComplete,
+}: {
+  skill: Skill;
+  partIds: string[];
+  /** Mock exam: start straight away with these sets. */
+  presetSets?: TestSet[];
+  /** Mock exam: hand back the result instead of showing and saving it. */
+  onComplete?: (r: ObjectiveResult) => void;
+}) {
   const parts = partIds.map((id) => getPart(skill, id)!);
   const isFull = parts.length > 1;
-  const [phase, setPhase] = useState<Phase>("setup");
-  const [sets, setSets] = useState<TestSet[]>([]);
+  const [phase, setPhase] = useState<Phase>(presetSets ? "running" : "setup");
+  const [sets, setSets] = useState<TestSet[]>(presetSets ?? []);
   const [gen, setGen] = useState<GenStatus[]>([]);
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -84,6 +96,7 @@ export function TestRunner({ skill, partIds }: { skill: Skill; partIds: string[]
     const r: ObjectiveResult = {
       mode: "objective", skill, correct, total, level: estimateLevel(skill, correct, total), sets, answers,
     };
+    if (onComplete) return onComplete(r);
     setResult(r);
     setPhase("results");
     window.scrollTo({ top: 0 });

@@ -2,7 +2,7 @@ import type { Kind, Prompt } from "./celpip";
 import type { Skill, TestSet } from "./rl";
 
 export interface GradeRequest {
-  kind: Kind | Skill;
+  kind: Kind | Skill | "exam";
   taskId: string;
   promptId: string;
   /** The prompt itself, when it was AI-generated rather than built in. */
@@ -44,15 +44,48 @@ export interface ObjectiveResult {
   answers: Record<string, number>;
 }
 
+export type ExamSkill = "listening" | "reading" | "writing" | "speaking";
+
+export interface ExamTaskResult {
+  kind: Kind;
+  taskId: string;
+  taskName: string;
+  promptTitle: string;
+  response: string;
+  durationSec?: number;
+  /** null when AI scoring wasn't available. */
+  level: number | null;
+  result: GradeResult;
+}
+
+export interface ExamResult {
+  mode: "exam";
+  source: "builtin" | "ai";
+  levels: Record<ExamSkill, number | null>;
+  /** Mean of the available skill levels, one decimal. */
+  average: number | null;
+  listening: ObjectiveResult;
+  reading: ObjectiveResult;
+  writing: ExamTaskResult[];
+  speaking: ExamTaskResult[];
+}
+
 export type GradeResult =
   | { mode: "ai"; model: string; feedback: Feedback; checks: Check[] }
   | { mode: "offline"; reason: string; checks: Check[] }
-  | ObjectiveResult;
+  | ObjectiveResult
+  | ExamResult;
+
+/** Lets a writing/speaking session run as one step of the mock exam. */
+export interface ExamHooks {
+  prompt: Prompt;
+  onSubmit: (req: GradeRequest) => void;
+}
 
 export interface Attempt {
   id: string;
   createdAt: string;
-  kind: Kind | Skill;
+  kind: Kind | Skill | "exam";
   taskId: string;
   taskName: string;
   promptTitle: string;

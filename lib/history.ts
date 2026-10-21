@@ -12,13 +12,19 @@ export function loadAttempts(): Attempt[] {
 }
 
 export function saveAttempt(a: Attempt) {
-  try {
-    const all = [a, ...loadAttempts()].slice(0, 100);
-    localStorage.setItem(KEY, JSON.stringify(all));
-    notify();
-  } catch {
-    /* storage full or unavailable: history is best-effort */
+  let all = [a, ...loadAttempts()].slice(0, 100);
+  // Mock exams are large; if storage is full, drop the oldest attempts until it fits.
+  while (all.length > 0) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(all));
+      notify();
+      return true;
+    } catch {
+      if (all.length === 1) break;
+      all = all.slice(0, Math.max(1, Math.floor(all.length * 0.8)));
+    }
   }
+  return false;
 }
 
 export function deleteAttempt(id: string) {
@@ -70,4 +76,18 @@ export function getServerSnapshot() {
 
 function notify() {
   listeners.forEach((fn) => fn());
+}
+
+/** The headline level of an attempt (mock exams use their average), or null if unscored. */
+export function attemptLevel(a: Attempt): number | null {
+  switch (a.result.mode) {
+    case "ai":
+      return a.result.feedback.overallLevel;
+    case "objective":
+      return a.result.level;
+    case "exam":
+      return a.result.average;
+    default:
+      return null;
+  }
 }

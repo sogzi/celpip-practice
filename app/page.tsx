@@ -25,6 +25,19 @@ export default function Home() {
         </div>
       </section>
 
+      <Link href="/exam" className="group block">
+        <Card className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-accent/40 bg-accent-soft transition group-hover:border-accent">
+          <div>
+            <Eyebrow>Full mock exam · about 2½ hours</Eyebrow>
+            <p className="mt-2 text-xl font-semibold group-hover:text-accent">Take all four sections, then get your average level</p>
+            <p className="text-sm text-muted mt-1">
+              Listening, Reading, Writing and Speaking in the official order. Your report shows a level for each skill and the average, with feedback for every task.
+            </p>
+          </div>
+          <span className="text-accent font-medium shrink-0">Start →</span>
+        </Card>
+      </Link>
+
       <section className="grid md:grid-cols-2 gap-5">
         {(["reading", "listening"] as Skill[]).map((skill) => (
           <Card key={skill} className="p-6 flex flex-col">

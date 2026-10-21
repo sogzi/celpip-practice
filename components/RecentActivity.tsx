@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { attemptLevel } from "@/lib/history";
 import { Card } from "./ui";
 import { useAttempts } from "./useAttempts";
 
@@ -14,13 +15,13 @@ export function RecentActivity() {
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {attempts.map((a) => {
-          const lv = a.result.mode === "ai" ? a.result.feedback.overallLevel : a.result.mode === "objective" ? a.result.level : null;
+          const lv = attemptLevel(a);
           return (
             <Card key={a.id} className="p-4">
               <p className="text-xs text-muted truncate">{a.taskName}</p>
               <p className="mt-1 font-medium truncate">{a.promptTitle}</p>
               <p className="mt-3 text-2xl font-semibold tabular-nums">
-                {lv ?? "–"}
+                {lv === null ? "–" : a.result.mode === "exam" ? lv.toFixed(1) : lv}
                 <span className="text-sm font-normal text-muted"> {lv ? "/ 12" : "not scored"}</span>
               </p>
             </Card>
