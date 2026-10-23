@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FEATURES } from "@/lib/features";
+import { AuthMenu } from "./AuthMenu";
 import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
@@ -41,6 +42,7 @@ export function SiteHeader() {
           })}
         </nav>
         <ThemeToggle />
+        <AuthMenu />
       </div>
     </header>
   );

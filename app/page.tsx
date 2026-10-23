@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SPEAKING_TASKS, WRITING_TASKS } from "@/lib/celpip";
 import { FEATURES } from "@/lib/features";
 import { PARTS, type Skill } from "@/lib/rl";
+import { HeroAuthButtons } from "@/components/AuthMenu";
 import { RecentActivity } from "@/components/RecentActivity";
 import { Card, ComingSoon, Eyebrow } from "@/components/ui";
 
@@ -17,6 +18,7 @@ export default function Home() {
           All four skills, with official timings and formats. Reading and listening are marked instantly; writing and
           speaking are scored on the four CELPIP rating dimensions, with language fixes and a sample answer.
         </p>
+        <HeroAuthButtons />
       </section>
 
       {FEATURES.mockExam ? (

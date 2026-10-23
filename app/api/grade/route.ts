@@ -1,9 +1,14 @@
 import { resolvePrompt } from "@/lib/prompts";
+import { createClient } from "@/lib/supabase/server";
 import { countWords, runChecks } from "@/lib/checks";
 import { MODEL, gradeWithClaude, hasApiKey, userMessage } from "@/lib/grader";
 import type { GradeRequest, GradeResult } from "@/lib/types";
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims) return Response.json({ error: "Please log in to continue." }, { status: 401 });
+
   let req: GradeRequest;
   try {
     req = await request.json();
