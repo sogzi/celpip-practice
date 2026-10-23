@@ -1,6 +1,8 @@
 import type { Kind } from "@/lib/celpip";
 import { FEATURES } from "@/lib/features";
-import { hasApiKey, userMessage } from "@/lib/grader";
+import { MODEL, hasApiKey, userMessage } from "@/lib/grader";
+import { createClient } from "@/lib/supabase/server";
+import { complete, limitMessage, release, reserve } from "@/lib/usage";
 import { generatePrompt } from "@/lib/prompt-generator";
 import { getTask } from "@/lib/prompts";
 
@@ -24,9 +26,18 @@ export async function POST(request: Request) {
   if (!hasApiKey()) {
     return Response.json({ error: "New prompts can't be generated right now." }, { status: 503 });
   }
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims) return Response.json({ error: "Please log in to continue." }, { status: 401 });
+  const slot = await reserve(auth.claims.sub, "generate_prompt");
+  if (!slot.ok) return Response.json({ error: limitMessage("generate_prompt", slot.limit) }, { status: 429 });
+
   try {
-    return Response.json(await generatePrompt(kind, taskId, avoid));
+    const { prompt, usage } = await generatePrompt(kind, taskId, avoid);
+    await complete(slot.id, MODEL, usage);
+    return Response.json(prompt);
   } catch (err) {
+    await release(slot.id);
     console.error("[generate-prompt]", err);
     return Response.json({ error: userMessage(err) }, { status: 502 });
   }

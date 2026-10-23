@@ -55,7 +55,7 @@ function specFor(kind: Kind, n: number): Spec {
   }
 }
 
-export async function generatePrompt(kind: Kind, taskId: string, avoid: string[]): Promise<Prompt> {
+export async function generatePrompt(kind: Kind, taskId: string, avoid: string[]): Promise<{ prompt: Prompt; usage: Anthropic.Usage }> {
   const task = getTask(kind, taskId);
   if (!task) throw new Error("Unknown task.");
   const spec = specFor(kind, task.number);
@@ -87,11 +87,12 @@ Choose a topic different from all of these: ${[...task.prompts.map((p) => p.titl
   if (out.points.length !== spec.points || out.options.length !== spec.options) {
     throw new Error("The generated prompt didn't match the task format. Please try again.");
   }
-  return {
+  const prompt: Prompt = {
     id: `ai-${kind}-${taskId}-${Date.now().toString(36)}`,
     title: out.title.trim(),
     body: out.body.trim(),
     points: spec.points ? out.points : undefined,
     options: spec.options ? out.options : undefined,
   };
+  return { prompt, usage: message.usage };
 }

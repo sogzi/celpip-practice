@@ -103,7 +103,7 @@ function clampLevel(n: number) {
   return Math.max(1, Math.min(12, Math.round(n)));
 }
 
-export async function gradeWithClaude(req: GradeRequest): Promise<Feedback> {
+export async function gradeWithClaude(req: GradeRequest): Promise<{ feedback: Feedback; usage: Anthropic.Usage }> {
   const client = new Anthropic();
   const { criteria, content } = buildPrompt(req);
 
@@ -120,11 +120,12 @@ export async function gradeWithClaude(req: GradeRequest): Promise<Feedback> {
   const out = message.parsed_output;
   if (!out) throw new Error("Could not read the grader's response. Please try again.");
 
-  return {
+  const feedback: Feedback = {
     ...out,
     overallLevel: clampLevel(out.overallLevel),
     dimensions: out.dimensions.map((d) => ({ ...d, level: clampLevel(d.level) })),
   };
+  return { feedback, usage: message.usage };
 }
 
 export function hasApiKey() {

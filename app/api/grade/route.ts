@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { countWords, runChecks } from "@/lib/checks";
 import { MODEL, gradeWithClaude, hasApiKey, userMessage } from "@/lib/grader";
 import type { GradeRequest, GradeResult } from "@/lib/types";
+import { complete, limitMessage, release, reserve } from "@/lib/usage";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -37,12 +38,21 @@ export async function POST(request: Request) {
     return Response.json(result);
   }
 
+  // Daily limit: claim a slot before calling the AI; give it back if scoring fails.
+  const userId = auth.claims.sub;
+  const slot = await reserve(userId, "score");
+  if (!slot.ok) {
+    return Response.json({ error: limitMessage("score", slot.limit), quota: { used: slot.used, limit: slot.limit } }, { status: 429 });
+  }
+
   try {
-    const feedback = await gradeWithClaude(req);
+    const { feedback, usage } = await gradeWithClaude(req);
+    await complete(slot.id, MODEL, usage);
     const result: GradeResult = { mode: "ai", model: MODEL, feedback, checks };
-    return Response.json(result);
+    return Response.json({ ...result, quota: { used: slot.used, limit: slot.limit } });
   } catch (err) {
     console.error("[grade]", err);
+    await release(slot.id);
     const result: GradeResult = { mode: "offline", reason: userMessage(err), checks };
     return Response.json(result);
   }

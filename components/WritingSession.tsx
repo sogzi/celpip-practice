@@ -6,6 +6,7 @@ import { countWords } from "@/lib/checks";
 import { newId, saveAttempt } from "@/lib/history";
 import type { ExamHooks, GradeRequest, GradeResult } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
+import { ScoreQuota, updateQuota } from "./ScoreQuota";
 import { PromptPicker } from "./PromptPicker";
 import { FEATURES } from "@/lib/features";
 import { useGeneratedPrompts } from "./useGeneratedPrompts";
@@ -65,6 +66,7 @@ export function WritingSession({ taskId, exam }: { taskId: string; exam?: ExamHo
     try {
       const res = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
+      updateQuota(data.quota);
       if (!res.ok) throw new Error(data.error || "Grading failed.");
       setResult(data);
       setPhase("done");
@@ -159,7 +161,10 @@ export function WritingSession({ taskId, exam }: { taskId: string; exam?: ExamHo
               )}
             </div>
           </div>
-          <p className="text-xs text-muted">Spell check is turned off, as in the real test.</p>
+          <div className="flex flex-wrap justify-between gap-2">
+            <p className="text-xs text-muted">Spell check is turned off, as in the real test.</p>
+            {!exam && <ScoreQuota />}
+          </div>
           {error && <p className="text-sm text-accent">{error}</p>}
         </div>
       )}

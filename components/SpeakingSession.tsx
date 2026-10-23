@@ -6,6 +6,7 @@ import { countWords } from "@/lib/checks";
 import { newId, saveAttempt } from "@/lib/history";
 import type { ExamHooks, GradeRequest, GradeResult } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
+import { ScoreQuota, updateQuota } from "./ScoreQuota";
 import { PromptPicker } from "./PromptPicker";
 import { FEATURES } from "@/lib/features";
 import { useGeneratedPrompts } from "./useGeneratedPrompts";
@@ -99,6 +100,7 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
     try {
       const res = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
+      updateQuota(data.quota);
       if (!res.ok) throw new Error(data.error || "Grading failed.");
       setResult(data);
       setPhase("done");
@@ -216,6 +218,7 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
               </>
             )}
           </div>
+          {!exam && <ScoreQuota />}
           {countWords(recorder.transcript) < 10 && phase === "review" && (
             <p className="text-sm text-muted">At least 10 words are needed for scoring.</p>
           )}

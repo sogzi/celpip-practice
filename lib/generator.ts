@@ -100,7 +100,7 @@ function validate(skill: Skill, part: PartDef, out: z.infer<typeof GeneratedSche
   return shuffleOptions(set);
 }
 
-export async function generateSet(skill: Skill, partId: string): Promise<TestSet> {
+export async function generateSet(skill: Skill, partId: string): Promise<{ set: TestSet; usage: Anthropic.Usage }> {
   const part = getPart(skill, partId);
   if (!part) throw new Error("Unknown part.");
   const client = new Anthropic();
@@ -114,5 +114,5 @@ export async function generateSet(skill: Skill, partId: string): Promise<TestSet
   if (message.stop_reason === "refusal") throw new Error("The model declined to write this test. Please try again.");
   if (message.stop_reason === "max_tokens") throw new Error("The test was cut off before it finished. Please try again.");
   if (!message.parsed_output) throw new Error("Couldn't read the generated test. Please try again.");
-  return validate(skill, part, message.parsed_output, `ai-${skill}-${partId}-${Date.now().toString(36)}`);
+  return { set: validate(skill, part, message.parsed_output, `ai-${skill}-${partId}-${Date.now().toString(36)}`), usage: message.usage };
 }

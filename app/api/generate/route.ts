@@ -1,5 +1,7 @@
 import { FEATURES } from "@/lib/features";
-import { hasApiKey, userMessage } from "@/lib/grader";
+import { MODEL, hasApiKey, userMessage } from "@/lib/grader";
+import { createClient } from "@/lib/supabase/server";
+import { complete, limitMessage, release, reserve } from "@/lib/usage";
 import { generateSet } from "@/lib/generator";
 import { getPart, type Skill } from "@/lib/rl";
 
@@ -23,9 +25,18 @@ export async function POST(request: Request) {
       { status: 503 },
     );
   }
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getClaims();
+  if (!auth?.claims) return Response.json({ error: "Please log in to continue." }, { status: 401 });
+  const slot = await reserve(auth.claims.sub, "generate_test");
+  if (!slot.ok) return Response.json({ error: limitMessage("generate_test", slot.limit) }, { status: 429 });
+
   try {
-    return Response.json(await generateSet(skill, partId));
+    const { set, usage } = await generateSet(skill, partId);
+    await complete(slot.id, MODEL, usage);
+    return Response.json(set);
   } catch (err) {
+    await release(slot.id);
     console.error("[generate]", err);
     return Response.json({ error: userMessage(err) }, { status: 502 });
   }
