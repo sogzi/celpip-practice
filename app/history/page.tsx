@@ -1,7 +1,7 @@
 import { HistoryView } from "@/components/HistoryView";
 import { Eyebrow } from "@/components/ui";
 
-export const metadata = { title: "Progress · CELPIP Practice" };
+export const metadata = { title: "Progress · Prepfluent" };
 
 export default function HistoryPage() {
   return (

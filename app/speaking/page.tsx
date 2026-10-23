@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SPEAKING_TASKS } from "@/lib/celpip";
 import { Card, Eyebrow } from "@/components/ui";
 
-export const metadata = { title: "Speaking · CELPIP Practice" };
+export const metadata = { title: "Speaking · Prepfluent" };
 
 export default function SpeakingIndex() {
   return (

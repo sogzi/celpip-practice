@@ -18,11 +18,11 @@ export function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface/80 backdrop-blur sticky top-0 z-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 sm:gap-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight shrink-0" aria-label="CELPIP Practice home">
+        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight shrink-0" aria-label="Prepfluent home">
           <span aria-hidden className="grid place-items-center size-7 rounded-md bg-accent text-accent-ink text-sm">
-            C
+            P
           </span>
-          <span className="hidden sm:inline">CELPIP Practice</span>
+          <span className="hidden sm:inline">Prepfluent</span>
         </Link>
         <nav className="flex-1 min-w-0 flex items-center sm:justify-end gap-0.5 sm:gap-1 text-sm overflow-x-auto no-scrollbar">
           {NAV.map((n) => {

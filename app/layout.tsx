@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { themeInitScript } from "@/components/ThemeToggle";
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CELPIP Practice",
+  title: "Prepfluent",
   description: "Timed CELPIP-General writing and speaking practice with AI scoring on the official 1–12 scale.",
 };
 
@@ -29,8 +30,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <SiteHeader />
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">{children}</main>
-        <footer className="border-t border-line py-6 text-center text-xs text-muted px-4">
-          Unofficial practice tool. CELPIP is a trademark of Paragon Testing Enterprises. AI scores are estimates.
+        <footer className="border-t border-line py-6 text-center text-xs text-muted px-4 space-y-2">
+          <nav className="flex justify-center gap-4" aria-label="Legal">
+            <Link href="/privacy" className="hover:text-ink">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-ink">Terms of Service</Link>
+          </nav>
+          <p>Unofficial practice tool. CELPIP is a trademark of Paragon Testing Enterprises. AI scores are estimates.</p>
         </footer>
       </body>
     </html>

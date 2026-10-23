@@ -2,7 +2,7 @@ import Link from "next/link";
 import { WRITING_TASKS } from "@/lib/celpip";
 import { Card, Eyebrow } from "@/components/ui";
 
-export const metadata = { title: "Writing · CELPIP Practice" };
+export const metadata = { title: "Writing · Prepfluent" };
 
 export default function WritingIndex() {
   return (

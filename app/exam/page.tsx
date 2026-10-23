@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, ComingSoon, Eyebrow, btn } from "@/components/ui";
 import { FEATURES } from "@/lib/features";
 
-export const metadata = { title: "Mock exam · CELPIP Practice" };
+export const metadata = { title: "Mock exam · Prepfluent" };
 
 export default function ExamPage() {
   return (
