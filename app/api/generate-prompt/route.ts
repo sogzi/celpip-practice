@@ -1,9 +1,13 @@
 import type { Kind } from "@/lib/celpip";
+import { FEATURES } from "@/lib/features";
 import { explainError, hasApiKey } from "@/lib/grader";
 import { generatePrompt } from "@/lib/prompt-generator";
 import { getTask } from "@/lib/prompts";
 
 export async function POST(request: Request) {
+  if (!FEATURES.aiGeneration) {
+    return Response.json({ error: "AI-generated content is coming soon." }, { status: 403 });
+  }
   let body: { kind?: Kind; taskId?: string; avoid?: unknown };
   try {
     body = await request.json();

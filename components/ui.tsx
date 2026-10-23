@@ -9,6 +9,14 @@ export const btn = {
   ghost: "inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink transition",
 };
 
+export function ComingSoon({ className = "" }: { className?: string }) {
+  return (
+    <span className={`inline-flex items-center rounded-full bg-surface-2 border border-line px-2 py-0.5 text-[11px] font-medium text-muted whitespace-nowrap ${className}`}>
+      Coming soon
+    </span>
+  );
+}
+
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`rounded-xl border border-line bg-surface ${className}`}>{children}</div>;
 }

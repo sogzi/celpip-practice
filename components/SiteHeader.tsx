@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { FEATURES } from "@/lib/features";
 import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
@@ -8,7 +9,7 @@ const NAV = [
   { href: "/listening", label: "Listening" },
   { href: "/writing", label: "Writing" },
   { href: "/speaking", label: "Speaking" },
-  { href: "/exam", label: "Mock exam" },
+  ...(FEATURES.mockExam ? [{ href: "/exam", label: "Mock exam" }] : []),
   { href: "/history", label: "Progress" },
 ];
 

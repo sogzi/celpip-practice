@@ -1,8 +1,12 @@
+import { FEATURES } from "@/lib/features";
 import { explainError, hasApiKey } from "@/lib/grader";
 import { generateSet } from "@/lib/generator";
 import { getPart, type Skill } from "@/lib/rl";
 
 export async function POST(request: Request) {
+  if (!FEATURES.aiGeneration) {
+    return Response.json({ error: "AI-generated content is coming soon." }, { status: 403 });
+  }
   let body: { skill?: Skill; partId?: string };
   try {
     body = await request.json();

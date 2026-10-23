@@ -7,6 +7,7 @@ import { newId, saveAttempt } from "@/lib/history";
 import type { ExamHooks, GradeRequest, GradeResult } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { PromptPicker } from "./PromptPicker";
+import { FEATURES } from "@/lib/features";
 import { useGeneratedPrompts } from "./useGeneratedPrompts";
 import { Card, PromptCard, btn, formatClock } from "./ui";
 import { useCountdown } from "./useCountdown";
@@ -234,7 +235,7 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
             <button className={btn.primary} onClick={() => reset(prompts[(prompts.indexOf(prompt) + 1) % prompts.length].id)}>
               Try the next prompt
             </button>
-            <button
+            {FEATURES.aiGeneration && (<button
               className={btn.secondary}
               disabled={promptList.generating}
               onClick={async () => {
@@ -243,7 +244,7 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
               }}
             >
               {promptList.generating ? "Writing a new prompt…" : "✦ Generate new prompt"}
-            </button>
+            </button>)}
             <button className={btn.secondary} onClick={() => reset()}>Retry this prompt</button>
             <Link href="/history" className={btn.secondary}>View progress</Link>
           </div>

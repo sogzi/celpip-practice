@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { FEATURES } from "@/lib/features";
 import { attemptLevel, deleteAttempt } from "@/lib/history";
 import { ExamReport } from "./ExamReport";
 import type { Attempt } from "@/lib/types";
@@ -83,9 +84,11 @@ export function HistoryView() {
   return (
     <div className="space-y-8">
       <div className="grid md:grid-cols-2 gap-5">
-        <div className="md:col-span-2">
-          <Trend label="Mock exams (average level)" attempts={attempts.filter((a) => a.kind === "exam")} />
-        </div>
+        {(FEATURES.mockExam || attempts.some((a) => a.kind === "exam")) && (
+          <div className="md:col-span-2">
+            <Trend label="Mock exams (average level)" attempts={attempts.filter((a) => a.kind === "exam")} />
+          </div>
+        )}
         <Trend label="Reading" attempts={attempts.filter((a) => a.kind === "reading")} />
         <Trend label="Listening" attempts={attempts.filter((a) => a.kind === "listening")} />
         <Trend label="Writing" attempts={attempts.filter((a) => a.kind === "writing")} />

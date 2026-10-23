@@ -1,5 +1,7 @@
 "use client";
 import type { Prompt } from "@/lib/celpip";
+import { FEATURES } from "@/lib/features";
+import { ComingSoon } from "./ui";
 
 export function PromptPicker({
   prompts,
@@ -45,7 +47,12 @@ export function PromptPicker({
         >
           Next prompt
         </button>
-        {onGenerate && (
+        {onGenerate && !FEATURES.aiGeneration && (
+          <span className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-dashed border-line px-3 py-2 text-sm text-muted" title="AI-generated prompts are coming soon">
+            ✦ New prompts <ComingSoon />
+          </span>
+        )}
+        {onGenerate && FEATURES.aiGeneration && (
           <button
             type="button"
             disabled={disabled || generating}

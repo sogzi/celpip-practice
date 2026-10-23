@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FEATURES } from "@/lib/features";
 import { PARTS, SKILL_INFO, type Skill } from "@/lib/rl";
 import { Card, Eyebrow } from "./ui";
 
@@ -14,7 +15,7 @@ export function SkillIndex({ skill }: { skill: Skill }) {
           {skill === "reading"
             ? "Timed parts with passages, diagrams and fill-in-the-blank replies. Answers are marked instantly."
             : "Recordings play once, then you answer within the time limit, just like test day. Answers are marked instantly."}{" "}
-          Use the built-in test or have Claude write a new one.
+          {FEATURES.aiGeneration ? "Use the built-in test or have Claude write a new one." : ""}
         </p>
       </div>
 

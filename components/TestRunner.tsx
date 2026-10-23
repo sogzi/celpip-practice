@@ -15,7 +15,8 @@ import { getBuiltinSet } from "@/lib/rl-bank";
 import type { ObjectiveResult } from "@/lib/types";
 import { ObjectiveReview } from "./ObjectiveReview";
 import { Panel, QuestionList, SectionMaterial, Transcript } from "./TestParts";
-import { btn, formatClock } from "./ui";
+import { FEATURES } from "@/lib/features";
+import { ComingSoon, btn, formatClock } from "./ui";
 import { useCountdown } from "./useCountdown";
 import { useSpeech } from "./useSpeech";
 
@@ -141,12 +142,19 @@ export function TestRunner({
             <span className="font-medium">Built-in test</span>
             <span className="block mt-1 text-sm text-muted">Starts instantly. The same questions each time.</span>
           </button>
+          {!FEATURES.aiGeneration ? (
+            <div className="text-left rounded-xl border border-dashed border-line p-4" aria-disabled>
+              <span className="flex items-center gap-2 font-medium text-muted">Generate a new test ✦ <ComingSoon /></span>
+              <span className="block mt-1 text-sm text-muted">Fresh AI-written {skill === "reading" ? "passages" : "recordings"} and questions every time.</span>
+            </div>
+          ) : (
           <button onClick={generate} className="text-left rounded-xl border border-accent/40 bg-accent-soft p-4 hover:border-accent transition">
             <span className="font-medium text-accent">Generate a new test ✦</span>
             <span className="block mt-1 text-sm text-muted">
               Claude writes fresh {skill === "reading" ? "passages" : "recordings"} and questions. Takes about {isFull ? "1–2 minutes" : "30–60 seconds"}.
             </span>
           </button>
+          )}
         </div>
       </Panel>
     );
