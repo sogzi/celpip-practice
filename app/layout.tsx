@@ -18,6 +18,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Prepfluent",
   description: "Timed CELPIP-General practice for all four skills, scored on the official 1–12 scale.",
+  // Google Search Console ownership check for https://prepfluent.applixr.com/
+  verification: { google: "Utq-k41e4UD6etIHvoG_2JQRmz3CvX5ZazcagfF1AgM" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
