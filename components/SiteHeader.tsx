@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FEATURES } from "@/lib/features";
 import { AuthMenu } from "./AuthMenu";
+import { LogoMark, Wordmark } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
@@ -20,10 +21,8 @@ export function SiteHeader() {
     <header className="border-b border-line bg-surface/80 backdrop-blur sticky top-0 z-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 sm:gap-4">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight shrink-0" aria-label="Prepfluent home">
-          <span aria-hidden className="grid place-items-center size-7 rounded-md bg-accent text-accent-ink text-sm">
-            P
-          </span>
-          <span className="hidden sm:inline">Prepfluent</span>
+          <LogoMark className="size-8 sm:hidden" />
+          <Wordmark className="hidden sm:block h-8 w-auto text-ink" />
         </Link>
         <nav className="flex-1 min-w-0 flex items-center sm:justify-end gap-0.5 sm:gap-1 text-sm overflow-x-auto no-scrollbar">
           {NAV.map((n) => {

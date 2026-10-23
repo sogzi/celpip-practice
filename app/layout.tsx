@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -15,8 +15,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f8f7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#121110" },
+  ],
+};
+
 export const metadata: Metadata = {
   title: "Prepfluent",
+  applicationName: "Prepfluent",
+  appleWebApp: { title: "Prepfluent" },
   description: "Timed CELPIP-General practice for all four skills, scored on the official 1–12 scale.",
   // Google Search Console ownership check for https://prepfluent.applixr.com/
   verification: { google: "Utq-k41e4UD6etIHvoG_2JQRmz3CvX5ZazcagfF1AgM" },

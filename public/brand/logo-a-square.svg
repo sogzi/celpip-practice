@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <title>Prepfluent</title>
+  <rect width="512" height="512" fill="#c8102e"/>
+  <g transform="translate(256 256) scale(1.15) translate(-274 -256)" fill="#ffffff">
+    <rect x="176" y="136" width="64" height="240" rx="10"/>
+    <path d="M208 168 H280 A60 60 0 0 1 280 288 H208" fill="none" stroke="#ffffff" stroke-width="64" stroke-linejoin="round"/>
+  </g>
+</svg>

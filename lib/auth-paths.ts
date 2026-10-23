@@ -1,5 +1,5 @@
 // Pages anyone can open without logging in. Everything else requires an account.
-const PUBLIC_EXACT = new Set(["/", "/login", "/signup", "/forgot-password", "/privacy", "/terms"]);
+const PUBLIC_EXACT = new Set(["/", "/login", "/signup", "/forgot-password", "/privacy", "/terms", "/manifest.webmanifest"]);
 const PUBLIC_PREFIXES = ["/auth/", "/brand/"];
 
 export function isPublicPath(pathname: string) {
