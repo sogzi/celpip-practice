@@ -92,7 +92,7 @@ export function FeedbackView({ result }: { result: GradeResult }) {
               className="w-full flex items-center justify-between font-semibold"
               aria-expanded={showRewrite}
             >
-              Model answer (level 10–11 rewrite of your response)
+              Sample answer (a level 10–11 version of your response)
               <span className="text-muted text-sm font-normal">{showRewrite ? "Hide" : "Show"}</span>
             </button>
             {showRewrite && (
@@ -124,7 +124,7 @@ export function FeedbackView({ result }: { result: GradeResult }) {
       )}
 
       {result.mode === "ai" && (
-        <p className="text-xs text-muted">Scored by {result.model}. AI scores are estimates and may differ from official CELPIP results.</p>
+        <p className="text-xs text-muted">Scores are estimates and may differ from official CELPIP results.</p>
       )}
     </div>
   );

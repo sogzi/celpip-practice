@@ -145,7 +145,7 @@ export function ExamRunner() {
           </ol>
           <ul className="mt-5 space-y-2 text-sm text-muted list-disc pl-5 leading-relaxed">
             <li>The sections run in the official order. It takes about 2½ hours, with a short break screen between sections.</li>
-            <li>Reading and listening are marked instantly. Writing and speaking are scored by AI together at the end, as on test day.</li>
+            <li>Reading and listening are marked instantly. Writing and speaking are scored together at the end, as on test day.</li>
             <li>Your report shows a CELPIP level for each skill and the <b className="text-ink">average across all four</b>.</li>
             <li>Progress is saved after every task, so you can close the tab and resume later.</li>
           </ul>
@@ -156,7 +156,7 @@ export function ExamRunner() {
             </button>
             <button onClick={prepareAi} className="text-left rounded-xl border border-accent/40 bg-accent-soft p-4 hover:border-accent transition">
               <span className="font-medium text-accent">Generate a fresh exam ✦</span>
-              <span className="block mt-1 text-sm text-muted">Claude writes every passage, recording and prompt. Takes 1–2 minutes, costs about $1.</span>
+              <span className="block mt-1 text-sm text-muted">Brand-new passages, recordings and prompts written just for you. Takes 1–2 minutes.</span>
             </button>
           </div>
         </Panel>
@@ -380,7 +380,7 @@ function GradingStep({ progress, onDone }: { progress: ExamProgress; onDone: (r:
         kind: "exam",
         taskId: "exam",
         taskName: "Full mock exam",
-        promptTitle: progress.content.source === "ai" ? "AI-generated content" : "Built-in content",
+        promptTitle: progress.content.source === "ai" ? "Fresh content" : "Built-in content",
         response: "",
         wordCount: 0,
         result,

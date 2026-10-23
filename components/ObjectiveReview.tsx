@@ -57,7 +57,7 @@ export function ObjectiveReview({ result }: { result: ObjectiveResult }) {
             <summary className="cursor-pointer list-none p-5 flex items-center justify-between gap-3">
               <span>
                 <span className="font-semibold">Review Part {part.number}: {part.name}</span>
-                <span className="block text-sm text-muted">{set.title}{set.source === "ai" ? " · AI-generated" : ""}</span>
+                <span className="block text-sm text-muted">{set.title}{set.source === "ai" ? " · Fresh test" : ""}</span>
               </span>
               <span className="text-sm tabular-nums text-muted shrink-0">{right}/{questionCount(set)} <span className="group-open:hidden">▸</span><span className="hidden group-open:inline">▾</span></span>
             </summary>

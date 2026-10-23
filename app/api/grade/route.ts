@@ -1,6 +1,6 @@
 import { resolvePrompt } from "@/lib/prompts";
 import { countWords, runChecks } from "@/lib/checks";
-import { MODEL, explainError, gradeWithClaude, hasApiKey } from "@/lib/grader";
+import { MODEL, gradeWithClaude, hasApiKey, userMessage } from "@/lib/grader";
 import type { GradeRequest, GradeResult } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   if (!hasApiKey()) {
     const result: GradeResult = {
       mode: "offline",
-      reason: "AI scoring isn't set up on this server yet (no Anthropic API key), so only the automatic checks ran.",
+      reason: "Scoring is temporarily unavailable, so only the automatic checks ran. Please try again later.",
       checks,
     };
     return Response.json(result);
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     return Response.json(result);
   } catch (err) {
     console.error("[grade]", err);
-    const result: GradeResult = { mode: "offline", reason: explainError(err), checks };
+    const result: GradeResult = { mode: "offline", reason: userMessage(err), checks };
     return Response.json(result);
   }
 }

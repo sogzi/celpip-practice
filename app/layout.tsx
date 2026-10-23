@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Prepfluent",
-  description: "Timed CELPIP-General writing and speaking practice with AI scoring on the official 1–12 scale.",
+  description: "Timed CELPIP-General practice for all four skills, scored on the official 1–12 scale.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/privacy" className="hover:text-ink">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-ink">Terms of Service</Link>
           </nav>
-          <p>Unofficial practice tool. CELPIP is a trademark of Paragon Testing Enterprises. AI scores are estimates.</p>
+          <p>Unofficial practice tool. CELPIP is a trademark of Paragon Testing Enterprises. Scores are estimates.</p>
         </footer>
       </body>
     </html>

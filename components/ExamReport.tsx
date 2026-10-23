@@ -83,7 +83,7 @@ export function ExamReport({ result, showActions = true }: { result: ExamResult;
 
         {missing.length > 0 && (
           <p className="mt-4 rounded-lg bg-warn-soft text-warn p-3 text-sm">
-            {missing.map((s) => SKILL_LABEL[s]).join(" and ")} couldn&apos;t be scored because AI scoring wasn&apos;t available, so the average
+            {missing.map((s) => SKILL_LABEL[s]).join(" and ")} couldn&apos;t be scored this time, so the average
             uses {scored.length} skill{scored.length === 1 ? "" : "s"}.
           </p>
         )}

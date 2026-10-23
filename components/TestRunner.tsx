@@ -107,7 +107,7 @@ export function TestRunner({
       kind: skill,
       taskId: isFull ? "full" : parts[0].id,
       taskName: isFull ? `${skill === "reading" ? "Reading" : "Listening"}: Full test` : `${skill === "reading" ? "Reading" : "Listening"} Part ${parts[0].number}: ${parts[0].name}`,
-      promptTitle: sets.map((s) => s.title).join(" · ") + (sets.some((s) => s.source === "ai") ? " (AI-generated)" : ""),
+      promptTitle: sets.map((s) => s.title).join(" · ") + (sets.some((s) => s.source === "ai") ? " (fresh test)" : ""),
       response: "",
       wordCount: 0,
       result: r,
@@ -145,13 +145,13 @@ export function TestRunner({
           {!FEATURES.aiGeneration ? (
             <div className="text-left rounded-xl border border-dashed border-line p-4" aria-disabled>
               <span className="flex items-center gap-2 font-medium text-muted">Generate a new test ✦ <ComingSoon /></span>
-              <span className="block mt-1 text-sm text-muted">Fresh AI-written {skill === "reading" ? "passages" : "recordings"} and questions every time.</span>
+              <span className="block mt-1 text-sm text-muted">Brand-new {skill === "reading" ? "passages" : "recordings"} and questions every time.</span>
             </div>
           ) : (
           <button onClick={generate} className="text-left rounded-xl border border-accent/40 bg-accent-soft p-4 hover:border-accent transition">
             <span className="font-medium text-accent">Generate a new test ✦</span>
             <span className="block mt-1 text-sm text-muted">
-              Claude writes fresh {skill === "reading" ? "passages" : "recordings"} and questions. Takes about {isFull ? "1–2 minutes" : "30–60 seconds"}.
+              Brand-new {skill === "reading" ? "passages" : "recordings"} and questions, written just for you. Takes about {isFull ? "1–2 minutes" : "30–60 seconds"}.
             </span>
           </button>
           )}
@@ -252,7 +252,7 @@ function PartHeader({ part, set, right }: { part: PartDef; set: TestSet; right?:
       <div>
         <p className="text-xs font-medium uppercase tracking-wider text-accent">Part {part.number}</p>
         <h2 className="text-xl font-semibold">{part.name}</h2>
-        <p className="text-sm text-muted">{set.title}{set.source === "ai" ? " · AI-generated" : ""}</p>
+        <p className="text-sm text-muted">{set.title}{set.source === "ai" ? " · Fresh test" : ""}</p>
       </div>
       {right}
     </div>

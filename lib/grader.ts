@@ -131,7 +131,15 @@ export function hasApiKey() {
   return Boolean(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
 }
 
-/** Human-readable explanation for an API failure. */
+/** Message safe to show users: no provider, model or configuration details. */
+export function userMessage(err: unknown): string {
+  console.error("[scoring]", explainError(err));
+  if (err instanceof Anthropic.RateLimitError) return "Lots of people are practising right now. Please try again in a minute.";
+  if (err instanceof Anthropic.APIConnectionError) return "Couldn't reach the scoring service. Check your connection and try again.";
+  return "Scoring is temporarily unavailable. Please try again later.";
+}
+
+/** Detailed explanation for an API failure (for server logs only). */
 export function explainError(err: unknown): string {
   if (err instanceof Anthropic.AuthenticationError)
     return "Your Anthropic API key was rejected. Check ANTHROPIC_API_KEY in .env.local.";

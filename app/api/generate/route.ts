@@ -1,11 +1,11 @@
 import { FEATURES } from "@/lib/features";
-import { explainError, hasApiKey } from "@/lib/grader";
+import { hasApiKey, userMessage } from "@/lib/grader";
 import { generateSet } from "@/lib/generator";
 import { getPart, type Skill } from "@/lib/rl";
 
 export async function POST(request: Request) {
   if (!FEATURES.aiGeneration) {
-    return Response.json({ error: "AI-generated content is coming soon." }, { status: 403 });
+    return Response.json({ error: "This feature is coming soon." }, { status: 403 });
   }
   let body: { skill?: Skill; partId?: string };
   try {
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   }
   if (!hasApiKey()) {
     return Response.json(
-      { error: "AI generation isn't set up on this server yet (no Anthropic API key). Use the built-in test instead." },
+      { error: "New tests can't be generated right now. Please use the built-in test." },
       { status: 503 },
     );
   }
@@ -27,6 +27,6 @@ export async function POST(request: Request) {
     return Response.json(await generateSet(skill, partId));
   } catch (err) {
     console.error("[generate]", err);
-    return Response.json({ error: explainError(err) }, { status: 502 });
+    return Response.json({ error: userMessage(err) }, { status: 502 });
   }
 }
