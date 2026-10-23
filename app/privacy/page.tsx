@@ -30,8 +30,9 @@ export default function PrivacyPage() {
             <b>Profile information</b> you choose to add, such as your display name and target CELPIP level.
           </li>
           <li>
-            <b>Practice answers.</b> The text of your writing responses and the text transcripts of your speaking responses, so they
-            can be scored and so you can review your feedback.
+            <b>Practice history.</b> Your results for each practice task and test, including your answers, the text of your writing
+            responses, the text transcripts of your speaking responses and the feedback you received, so you can review them and
+            track your progress on any device.
           </li>
           <li>
             <b>Basic technical information</b> needed to run the service securely, such as sign-in session cookies and server logs
@@ -80,7 +81,7 @@ export default function PrivacyPage() {
         <p>We use a small number of trusted providers to run {SITE.name}. They process information only on our behalf:</p>
         <ul>
           <li>
-            <b>Supabase</b>: stores accounts and profiles and handles sign-in.
+            <b>Supabase</b>: stores accounts, profiles and practice history, and handles sign-in.
           </li>
           <li>
             <b>Vercel</b>: hosts the website and processes requests.
@@ -100,9 +101,9 @@ export default function PrivacyPage() {
       <section>
         <h2>Cookies and local storage</h2>
         <p>
-          We use essential cookies to keep you signed in. We also store some settings and your practice history in your
-          browser&apos;s local storage (for example, your light or dark mode choice). We do not use advertising or third-party
-          tracking cookies.
+          We use essential cookies to keep you signed in. We also keep some settings and a copy of your recent practice history in
+          your browser&apos;s local storage so pages load quickly (for example, your light or dark mode choice). We do not use
+          advertising or third-party tracking cookies.
         </p>
       </section>
 
@@ -118,7 +119,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Your choices and rights</h2>
         <ul>
-          <li>You can view and update your profile at any time.</li>
+          <li>You can view and update your profile at any time, and delete individual results from your practice history.</li>
           <li>
             You can ask for a copy of your information, ask us to correct it, or ask us to delete your account by emailing{" "}
             <ContactLink />.

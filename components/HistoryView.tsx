@@ -7,7 +7,7 @@ import { ExamReport } from "./ExamReport";
 import type { Attempt } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { Card, btn } from "./ui";
-import { useAttempts } from "./useAttempts";
+import { useHistory } from "./useAttempts";
 
 const levelOf = attemptLevel;
 
@@ -65,8 +65,12 @@ function Trend({ attempts, label }: { attempts: Attempt[]; label: string }) {
 const fmt = (n: number | null) => (n === null ? "–" : String(Math.round(n)));
 
 export function HistoryView() {
-  const attempts = useAttempts();
+  const { attempts, ready } = useHistory();
   const [openId, setOpenId] = useState<string>();
+
+  if (!ready) {
+    return <div className="h-64 rounded-xl border border-line bg-surface animate-pulse" aria-label="Loading your history" />;
+  }
 
   if (attempts.length === 0) {
     return (

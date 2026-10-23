@@ -9,7 +9,7 @@ export default function HistoryPage() {
       <div>
         <Eyebrow>Your progress</Eyebrow>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Practice history</h1>
-        <p className="mt-2 text-muted">Saved in this browser only.</p>
+        <p className="mt-2 text-muted">Saved to your account, so it follows you on any device.</p>
       </div>
       <HistoryView />
     </div>
