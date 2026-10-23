@@ -1,6 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import Script from "next/script";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { SITE } from "@/lib/site";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "./ui";
 
@@ -53,7 +56,113 @@ export function Divider() {
   );
 }
 
+// --- Google sign-in -------------------------------------------------------------
+// Uses Google's own button (Google Identity Services) and signInWithIdToken, so the
+// sign-in happens on our domain instead of redirecting through <project>.supabase.co.
+
+interface GoogleCredentialResponse {
+  credential: string;
+}
+interface GoogleId {
+  initialize(config: {
+    client_id: string;
+    callback: (r: GoogleCredentialResponse) => void;
+    nonce?: string;
+    use_fedcm_for_prompt?: boolean;
+    ux_mode?: "popup" | "redirect";
+    context?: "signin" | "signup" | "use";
+    itp_support?: boolean;
+  }): void;
+  renderButton(
+    el: HTMLElement,
+    options: { type?: string; theme?: string; size?: string; text?: string; shape?: string; width?: number; logo_alignment?: string },
+  ): void;
+}
+declare global {
+  interface Window {
+    google?: { accounts: { id: GoogleId } };
+  }
+}
+
+/** Raw nonce goes to Supabase; its SHA-256 hex hash goes to Google. */
+async function generateNonce(): Promise<[string, string]> {
+  const nonce = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))));
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(nonce));
+  const hashed = Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return [nonce, hashed];
+}
+
 export function GoogleButton({ next, label = "Continue with Google" }: { next: string; label?: string }) {
+  const router = useRouter();
+  const container = useRef<HTMLDivElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+  const [failed, setFailed] = useState(false);
+  const isSignup = label.toLowerCase().includes("sign up");
+  const reinit = useRef<() => void>(() => {});
+
+  const init = useCallback(async () => {
+    const el = container.current;
+    if (!window.google || !el) return;
+    const [nonce, hashedNonce] = await generateNonce();
+    window.google.accounts.id.initialize({
+      client_id: SITE.googleClientId,
+      nonce: hashedNonce,
+      ux_mode: "popup",
+      context: isSignup ? "signup" : "signin",
+      itp_support: true,
+      use_fedcm_for_prompt: true,
+      callback: async ({ credential }) => {
+        setBusy(true);
+        setError(undefined);
+        const { error } = await createClient().auth.signInWithIdToken({ provider: "google", token: credential, nonce });
+        if (error) {
+          console.error("[google]", error.message);
+          setError("Google sign-in didn't work. Please try again, or use your email instead.");
+          setBusy(false);
+          reinit.current(); // fresh nonce for the next attempt
+          return;
+        }
+        router.replace(next);
+        router.refresh();
+      },
+    });
+    const dark = document.documentElement.dataset.theme === "dark" ||
+      (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+    el.replaceChildren();
+    window.google.accounts.id.renderButton(el, {
+      type: "standard",
+      theme: dark ? "filled_black" : "outline",
+      size: "large",
+      text: isSignup ? "signup_with" : "continue_with",
+      shape: "rectangular",
+      logo_alignment: "center",
+      width: Math.min(400, Math.max(200, Math.floor(el.getBoundingClientRect().width))),
+    });
+  }, [isSignup, next, router]);
+
+  // The script may already be loaded when moving between the login and sign-up pages.
+  useEffect(() => {
+    reinit.current = () => void init();
+    if (window.google) void init();
+  }, [init]);
+
+  if (failed) return <GoogleRedirectButton next={next} label={label} />;
+
+  return (
+    <div className="space-y-2">
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onReady={() => void init()} onError={() => setFailed(true)} />
+      <div ref={container} className={`flex justify-center min-h-[44px] ${busy ? "opacity-50 pointer-events-none" : ""}`} aria-busy={busy} />
+      {busy && <p className="text-center text-xs text-muted">Signing you in…</p>}
+      <FormError message={error} />
+    </div>
+  );
+}
+
+/** Fallback when Google's script can't load (e.g. blocked by an extension): redirect flow. */
+function GoogleRedirectButton({ next, label }: { next: string; label: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   async function go() {
