@@ -10,6 +10,8 @@ export interface Prompt {
   body: string;
   /** Bullet points the response must address (writing Task 1, speaking scenes, etc). */
   points?: string[];
+  /** Picture shown instead of the points list (Speaking Tasks 3 and 4). The points still describe it for scoring. */
+  image?: { src: string; alt: string };
   /** Two choices for Writing Task 2 and Speaking Task 5. */
   options?: { label: string; detail: string }[];
 }
@@ -253,6 +255,7 @@ export const SPEAKING_TASKS: SpeakingTask[] = [
         id: "farmers-market",
         title: "Saturday farmers' market",
         body: "Imagine you are looking at this scene. Describe it in as much detail as possible to someone who cannot see it.",
+        image: { src: "/scenes/farmers-market.svg", alt: "A busy outdoor farmers' market" },
         points: [
           "An outdoor market on a sunny morning with colourful tents",
           "A vendor weighing apples for an elderly woman with a shopping cart",
@@ -266,6 +269,7 @@ export const SPEAKING_TASKS: SpeakingTask[] = [
         id: "airport-gate",
         title: "Crowded airport gate",
         body: "Imagine you are looking at this scene. Describe it in as much detail as possible to someone who cannot see it.",
+        image: { src: "/scenes/airport-gate.svg", alt: "A crowded airport departure gate" },
         points: [
           "A departure board showing several flights marked 'Delayed'",
           "A businessman on a laptop with coffee spilling next to him",
@@ -289,6 +293,7 @@ export const SPEAKING_TASKS: SpeakingTask[] = [
         id: "farmers-market-next",
         title: "The farmers' market, next",
         body: "Look again at the farmers' market scene. Predict what will most probably happen next.",
+        image: { src: "/scenes/farmers-market.svg", alt: "A busy outdoor farmers' market" },
         points: [
           "An outdoor market on a sunny morning with colourful tents",
           "A vendor weighing apples for an elderly woman with a shopping cart",
@@ -302,6 +307,7 @@ export const SPEAKING_TASKS: SpeakingTask[] = [
         id: "airport-next",
         title: "The airport gate, next",
         body: "Look again at the airport gate scene. Predict what will most probably happen next.",
+        image: { src: "/scenes/airport-gate.svg", alt: "A crowded airport departure gate" },
         points: [
           "A departure board showing several flights marked 'Delayed'",
           "A businessman on a laptop with coffee spilling next to him",

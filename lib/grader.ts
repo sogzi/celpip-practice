@@ -46,7 +46,7 @@ const FeedbackSchema = z.object({
 
 function describePrompt(p: Prompt) {
   let s = `${p.title}\n${p.body}`;
-  if (p.points) s += "\n" + p.points.map((x) => `- ${x}`).join("\n");
+  if (p.points) s += (p.image ? "\nThe picture shows:" : "") + "\n" + p.points.map((x) => `- ${x}`).join("\n");
   if (p.options) s += "\n" + p.options.map((o) => `- ${o.label}: ${o.detail}`).join("\n");
   return s;
 }

@@ -45,7 +45,16 @@ export function PromptCard({
     <Card className="p-5 sm:p-6">
       <h2 className="font-semibold text-lg">{prompt.title}</h2>
       <p className="mt-2 leading-relaxed">{prompt.body}</p>
-      {prompt.points && (
+      {prompt.image ? (
+        // eslint-disable-next-line @next/next/no-img-element -- static SVG illustration
+        <img
+          src={prompt.image.src}
+          alt={prompt.image.alt}
+          className="mt-4 w-full rounded-lg border border-line bg-white"
+          width={800}
+          height={500}
+        />
+      ) : prompt.points && (
         <>
           <p className="mt-4 text-sm font-medium text-muted">{pointsLabel}</p>
           <ul className="mt-2 space-y-1.5">
