@@ -1,19 +1,11 @@
-// Built-in Reading & Listening practice sets (one per part).
+// Built-in Reading & Listening practice sets. Test 1 for each part is here; Tests 2 and 3
+// are in rl-bank-reading.ts and rl-bank-listening.ts.
 // Questions are written with the correct answer first; shuffleOptions() mixes them
 // deterministically so the answer position varies but stays stable between visits.
-import { shuffleOptions, type Question, type Skill, type TestSet } from "./rl";
-
-let n = 0;
-/** Multiple-choice question; the first option is the correct one. */
-function q(prompt: string, correct: string, distractors: string[], explanation?: string): Question {
-  return { id: `b${++n}`, prompt, options: [correct, ...distractors], answer: 0, explanation };
-}
-
-const PARAGRAPHS = ["A", "B", "C", "D", "E (Not given)"];
-/** Reading Part 3 statement; `para` is A–E. */
-function p(prompt: string, para: "A" | "B" | "C" | "D" | "E", explanation?: string): Question {
-  return { id: `b${++n}`, prompt, options: PARAGRAPHS, answer: "ABCDE".indexOf(para), explanation };
-}
+import { shuffleOptions, type Skill, type TestSet } from "./rl";
+import { moreListening } from "./rl-bank-listening";
+import { moreReading } from "./rl-bank-reading";
+import { p, q } from "./rl-q";
 
 const reading: TestSet[] = [
   {
@@ -417,11 +409,26 @@ const listening: TestSet[] = [
   },
 ];
 
+/** Give every question an id that is unique across the whole bank, then shuffle options. */
+function prepare(set: TestSet): TestSet {
+  let i = 0;
+  return shuffleOptions({
+    ...set,
+    sections: set.sections.map((sec) => ({ ...sec, questions: sec.questions.map((x) => ({ ...x, id: `${set.id}-q${++i}` })) })),
+  });
+}
+
 const BANK: Record<Skill, TestSet[]> = {
-  reading: reading.map((s) => shuffleOptions(s)),
-  listening: listening.map((s) => shuffleOptions(s)),
+  reading: [...reading, ...moreReading].map(prepare),
+  listening: [...listening, ...moreListening].map(prepare),
 };
 
+/** All built-in tests for a part, in order (Test 1, Test 2, …). */
+export function getBuiltinSets(skill: Skill, partId: string) {
+  return BANK[skill].filter((s) => s.partId === partId);
+}
+
+/** The first built-in test for a part (used by the mock exam and as a fallback). */
 export function getBuiltinSet(skill: Skill, partId: string) {
-  return BANK[skill].find((s) => s.partId === partId);
+  return getBuiltinSets(skill, partId)[0];
 }

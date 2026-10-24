@@ -11,9 +11,10 @@ import {
   type Skill,
   type TestSet,
 } from "@/lib/rl";
-import { getBuiltinSet } from "@/lib/rl-bank";
+import { getBuiltinSet, getBuiltinSets } from "@/lib/rl-bank";
 import type { ObjectiveResult } from "@/lib/types";
 import { ObjectiveReview } from "./ObjectiveReview";
+import { useAttempts } from "./useAttempts";
 import { Panel, QuestionList, SectionMaterial, Transcript } from "./TestParts";
 import { FEATURES } from "@/lib/features";
 import { ComingSoon, btn, formatClock } from "./ui";
@@ -44,6 +45,25 @@ export function TestRunner({
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [result, setResult] = useState<ObjectiveResult>();
+  const [picked, setPicked] = useState<number>();
+  const attempts = useAttempts();
+
+  // Built-in Test N = the Nth built-in set of every part.
+  const perPart = parts.map((p) => getBuiltinSets(skill, p.id));
+  const builtinTests = Array.from({ length: Math.min(...perPart.map((s) => s.length)) }, (_, i) => perPart.map((s) => s[i]));
+
+  // Best previous score for each built-in test.
+  const bestScores = builtinTests.map((test) => {
+    const ids = test.map((s) => s.id).join();
+    let best: { correct: number; total: number } | undefined;
+    for (const a of attempts) {
+      if (a.result.mode !== "objective" || a.result.sets.map((s) => s.id).join() !== ids) continue;
+      if (!best || a.result.correct > best.correct) best = { correct: a.result.correct, total: a.result.total };
+    }
+    return best;
+  });
+  const firstNew = bestScores.findIndex((b) => !b);
+  const selected = picked ?? (firstNew === -1 ? 0 : firstNew);
 
   function start(chosen: TestSet[]) {
     setSets(chosen);
@@ -54,7 +74,7 @@ export function TestRunner({
   }
 
   function startBuiltin() {
-    start(parts.map((p) => getBuiltinSet(skill, p.id)!));
+    start(builtinTests[selected]);
   }
 
   async function generate() {
@@ -137,11 +157,47 @@ export function TestRunner({
           )}
           <li>You&apos;ll get your score, an estimated CELPIP level and explanations at the end.</li>
         </ul>
-        <div className="mt-5 grid sm:grid-cols-2 gap-3">
-          <button onClick={startBuiltin} className="text-left rounded-xl border border-line p-4 hover:border-muted transition">
-            <span className="font-medium">Built-in test</span>
-            <span className="block mt-1 text-sm text-muted">Starts instantly. The same questions each time.</span>
+        <fieldset className="mt-5">
+          <legend className="text-sm font-medium">Choose a test</legend>
+          <div className="mt-2 space-y-2" role="radiogroup">
+            {builtinTests.map((test, i) => {
+              const best = bestScores[i];
+              const on = i === selected;
+              return (
+                <button
+                  key={test[0].id}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setPicked(i)}
+                  className={`w-full flex items-center gap-3 text-left rounded-xl border px-4 py-3 transition ${
+                    on ? "border-accent bg-accent-soft" : "border-line hover:border-muted"
+                  }`}
+                >
+                  <span className={`size-4 shrink-0 rounded-full border-2 grid place-items-center ${on ? "border-accent" : "border-line"}`} aria-hidden>
+                    {on && <span className="size-2 rounded-full bg-accent" />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium">
+                      Test {i + 1}
+                      {!isFull && <span className="font-normal">: {test[0].title}</span>}
+                    </span>
+                    {isFull && <span className="block mt-0.5 text-xs text-muted truncate">{test.map((s) => s.title).join(" · ")}</span>}
+                  </span>
+                  {best && (
+                    <span className="shrink-0 text-xs text-good tabular-nums">
+                      ✓ Best {best.correct}/{best.total}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <button onClick={startBuiltin} className={`${btn.primary} mt-4`}>
+            Start Test {selected + 1}
           </button>
+        </fieldset>
+        <div className="mt-5 grid sm:grid-cols-2 gap-3">
           {!FEATURES.aiGeneration ? (
             <div className="text-left rounded-xl border border-dashed border-line p-4" aria-disabled>
               <span className="flex items-center gap-2 font-medium text-muted">Generate a new test ✦ <ComingSoon /></span>

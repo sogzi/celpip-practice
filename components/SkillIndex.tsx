@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FEATURES } from "@/lib/features";
 import { PARTS, SKILL_INFO, type Skill } from "@/lib/rl";
+import { getBuiltinSets } from "@/lib/rl-bank";
 import { Card, Eyebrow } from "./ui";
 
 export function SkillIndex({ skill }: { skill: Skill }) {
@@ -32,6 +33,7 @@ export function SkillIndex({ skill }: { skill: Skill }) {
       <div className="grid sm:grid-cols-2 gap-4">
         {parts.map((p) => {
           const qs = p.sections.reduce((a, b) => a + b, 0);
+          const tests = getBuiltinSets(skill, p.id).length;
           return (
             <Link key={p.id} href={`/${skill}/${p.id}`} className="group">
               <Card className="p-5 h-full flex gap-4 transition group-hover:border-muted">
@@ -42,7 +44,7 @@ export function SkillIndex({ skill }: { skill: Skill }) {
                   <h2 className="font-semibold group-hover:text-accent">{p.name}</h2>
                   <p className="mt-1 text-sm text-muted leading-relaxed">{p.summary}</p>
                   <p className="mt-2 text-xs text-muted">
-                    {qs} questions{p.minutes ? ` · ${p.minutes} min` : ""}
+                    {qs} questions{p.minutes ? ` · ${p.minutes} min` : ""} · {tests} {tests === 1 ? "test" : "tests"}
                   </p>
                 </div>
               </Card>
