@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/SiteHeader";
 import { themeInitScript } from "@/components/ThemeToggle";
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </nav>
           <p>Unofficial practice tool. CELPIP is a trademark of Paragon Testing Enterprises. Scores are estimates.</p>
         </footer>
+        <Analytics />
       </body>
     </html>
   );

@@ -8,5 +8,5 @@ export const SITE = {
   /** Google OAuth web client ID (public: it appears on every Google sign-in page). */
   googleClientId: "845633832676-rm4mqa633pup3u074426r8momv76pcrg.apps.googleusercontent.com",
   /** Update when the policies change. */
-  legalUpdated: "October 23, 2026",
+  legalUpdated: "October 25, 2026",
 };

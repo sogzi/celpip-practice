@@ -38,6 +38,11 @@ export default function PrivacyPage() {
             <b>Basic technical information</b> needed to run the service securely, such as sign-in session cookies and server logs
             (for example, IP address, browser type and the time of a request).
           </li>
+          <li>
+            <b>Anonymous usage statistics.</b> We use Vercel Web Analytics to count page views and see which pages are used, along
+            with general information such as country, device type and browser. It does not use cookies and does not identify you
+            personally.
+          </li>
         </ul>
         <p>
           <b>Voice recordings stay on your device.</b> When you practise speaking, your audio is recorded in your browser so you can
@@ -103,7 +108,7 @@ export default function PrivacyPage() {
         <p>
           We use essential cookies to keep you signed in. We also keep some settings and a copy of your recent practice history in
           your browser&apos;s local storage so pages load quickly (for example, your light or dark mode choice). We do not use
-          advertising or third-party tracking cookies.
+          advertising or third-party tracking cookies, and our usage statistics work without cookies.
         </p>
       </section>
 
