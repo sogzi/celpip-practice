@@ -336,6 +336,20 @@ export const SPEAKING_TASKS: SpeakingTask[] = [
         ],
       },
       {
+        id: "sunset-park",
+        title: "Park at sunset",
+        body: "Imagine you are looking at this scene. Describe it in as much detail as possible to someone who cannot see it.",
+        image: { src: "/scenes/sunset-park.jpg", alt: "A busy neighbourhood park at sunset with a food truck, children on swings, families walking and two dogs" },
+        points: [
+          "A busy neighbourhood park in the early evening; the sun is setting on the left and everything has a warm orange glow with long shadows",
+          "On the left, a green food truck with the number 22 on its side is parked on the path, and someone is serving at the window",
+          "On the right, there is a swing set where several children are swinging while adults stand or sit nearby",
+          "In the middle of the path, families are walking; a small child holds an adult's hand and another child rides a small bike beside a parent",
+          "In the front, a couple walks a small dog on a leash, and a brown dog without a leash runs across the path",
+          "In the front right, a man in a cap sits on a bench looking at his phone; in the background there are street lamps, trees, a white van and an apartment building",
+        ],
+      },
+      {
         id: "park-parachute",
         title: "Parachute game in the park",
         body: "Imagine you are looking at this scene. Describe it in as much detail as possible to someone who cannot see it.",
@@ -469,6 +483,20 @@ export const SPEAKING_TASKS: SpeakingTask[] = [
           "The woman using the sander will probably check that the surface is smooth and then move on to the next piece",
           "The instructor will likely walk around to help other groups, perhaps explaining how to use the drill",
           "At the end of the class, everyone will probably clean up the sawdust and put the tools away, as the 'Safety First' sign says",
+        ],
+      },
+      {
+        id: "sunset-park-next",
+        title: "Park at sunset: what's next",
+        body: "Look at this scene. Predict what will most probably happen next.",
+        image: { src: "/scenes/sunset-park.jpg", alt: "A busy neighbourhood park at sunset with a food truck, children on swings, families walking and two dogs" },
+        points: [
+          "The sun is going down, so the families will probably start walking home soon because it will get dark",
+          "The parents at the swings will likely call their children to get off and go home for dinner",
+          "Before it closes, a few more people may buy food at the food truck, and then the owner will probably pack up and drive away",
+          "The brown dog without a leash is running toward the couple's small dog, so the two dogs might sniff each other or start barking",
+          "The owner of the brown dog may come and put it on a leash so it does not bother other people",
+          "When it gets darker, the street lamps will turn on and the man on the bench will probably finish with his phone and leave",
         ],
       },
       {
