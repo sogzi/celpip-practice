@@ -50,7 +50,7 @@ export function PromptCard({
         <img
           src={prompt.image.src}
           alt={prompt.image.alt}
-          className="mt-4 w-full rounded-lg border border-line bg-white"
+          className="mt-4 w-full h-auto max-h-[70vh] object-contain rounded-lg border border-line bg-surface-2"
           width={1400}
           height={900}
         />
