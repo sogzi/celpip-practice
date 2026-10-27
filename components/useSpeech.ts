@@ -31,13 +31,27 @@ const noop = () => () => {};
 
 // --- voice casting ----------------------------------------------------------
 const FEMALE = /samantha|karen|moira|tessa|victoria|fiona|serena|zira|susan|allison|ava|kate|nicky|joelle|female|catherine|sandy|shelley|flo|aria|jenny|libby|sonia|natasha|clara|amelie/i;
-const MALE = /daniel|alex|fred|tom|aaron|arthur|gordon|oliver|rishi|david|mark|male|guy|ryan|liam|eddy|reed|rocko|grandpa|thomas|james|george|lee/i;
+const MALE = /daniel|alex|tom|aaron|arthur|gordon|oliver|rishi|david|mark|male|guy|ryan|liam|thomas|james|george|lee/i;
 const LANG_RANK = ["en-CA", "en-US", "en-GB", "en-AU", "en-IE", "en-NZ"];
+// Novelty and old formant voices sound robotic; only use them if nothing else exists.
+const ROBOTIC = /albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|junior|ralph|fred|kathy|eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley/i;
+// Neural / enhanced voices sound much more natural.
+const NATURAL = /natural|neural|online|premium|enhanced|google/i;
 
 function rankLang(v: SpeechSynthesisVoice) {
   const i = LANG_RANK.indexOf(v.lang.replace("_", "-"));
   return i === -1 ? LANG_RANK.length : i;
 }
+
+function rankQuality(v: SpeechSynthesisVoice) {
+  return ROBOTIC.test(v.name) ? 2 : NATURAL.test(v.name) ? 0 : 1;
+}
+
+// Default browser voices speak at ~180-190 words per minute; CELPIP recordings are a
+// relaxed conversational ~140-150, with clear pauses between sentences and speakers.
+const RATE = 0.8;
+const SENTENCE_PAUSE_MS = 300;
+const TURN_PAUSE_MS = 700;
 
 export interface Cast {
   voice: SpeechSynthesisVoice | null;
@@ -47,7 +61,7 @@ export interface Cast {
 export function castVoices(voices: SpeechSynthesisVoice[], speakers: Speakers): Map<string, Cast> {
   const english = voices
     .filter((v) => /^en([-_]|$)/i.test(v.lang))
-    .sort((a, b) => rankLang(a) - rankLang(b) || Number(b.localService) - Number(a.localService));
+    .sort((a, b) => rankQuality(a) - rankQuality(b) || rankLang(a) - rankLang(b) || Number(b.localService) - Number(a.localService));
   const used = new Set<string>();
   const cast = new Map<string, Cast>();
   speakers.forEach((s, i) => {
@@ -93,7 +107,7 @@ export function useSpeech() {
       let watchdog: ReturnType<typeof setTimeout> | undefined;
       const cast = castVoices(speechSynthesis.getVoices(), speakers);
       const queue = script.flatMap((line, li) =>
-        sentences(line.text).map((text, si) => ({ speaker: line.speaker, text, newLine: si === 0 && li > 0 })),
+        sentences(line.text).map((text, si) => ({ speaker: line.speaker, text, pause: si > 0 ? SENTENCE_PAUSE_MS : li > 0 ? TURN_PAUSE_MS : 0 })),
       );
       let i = 0;
       const next = () => {
@@ -113,7 +127,7 @@ export function useSpeech() {
           u.lang = "en-CA";
         }
         u.pitch = c?.pitch ?? 1;
-        u.rate = 0.95;
+        u.rate = RATE;
         u.onstart = () => clearTimeout(watchdog);
         u.onend = () => next();
         u.onerror = (e) => {
@@ -133,8 +147,8 @@ export function useSpeech() {
             onFail?.();
           }, 5000);
         };
-        // Short pause when the speaker changes, like a real conversation.
-        if (item.newLine) setTimeout(start, 350);
+        // Natural pauses between sentences and longer ones when the speaker changes.
+        if (item.pause) setTimeout(start, item.pause);
         else start();
       };
       next();
