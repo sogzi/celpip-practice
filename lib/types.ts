@@ -70,11 +70,21 @@ export interface ExamResult {
   speaking: ExamTaskResult[];
 }
 
+/** A full Writing or Speaking test: every task in order, scored together at the end. */
+export interface SectionResult {
+  mode: "section";
+  skill: Kind;
+  /** Mean of the scored task levels, one decimal; null if no task could be scored. */
+  level: number | null;
+  tasks: ExamTaskResult[];
+}
+
 export type GradeResult =
   | { mode: "ai"; model: string; feedback: Feedback; checks: Check[] }
   | { mode: "offline"; reason: string; checks: Check[] }
   | ObjectiveResult
-  | ExamResult;
+  | ExamResult
+  | SectionResult;
 
 /** Lets a writing/speaking session run as one step of the mock exam. */
 export interface ExamHooks {

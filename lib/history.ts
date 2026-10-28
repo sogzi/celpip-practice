@@ -192,7 +192,7 @@ export function newId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-/** The headline level of an attempt (mock exams use their average), or null if unscored. */
+/** The headline level of an attempt (mock exams and full tests use their average), or null if unscored. */
 export function attemptLevel(a: Attempt): number | null {
   switch (a.result.mode) {
     case "ai":
@@ -201,6 +201,8 @@ export function attemptLevel(a: Attempt): number | null {
       return a.result.level;
     case "exam":
       return a.result.average;
+    case "section":
+      return a.result.level;
     default:
       return null;
   }

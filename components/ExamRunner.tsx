@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { SPEAKING_TASKS, WRITING_TASKS, type Prompt } from "@/lib/celpip";
-import { countWords } from "@/lib/checks";
 import {
   SECTION_INFO,
   SKILL_LABEL,
@@ -12,6 +11,7 @@ import {
   getProgressSnapshot,
   parseProgress,
   saveProgress,
+  scoreTasks,
   subscribeProgress,
   type ExamContent,
   type ExamProgress,
@@ -20,7 +20,7 @@ import {
 import { newId, saveAttempt } from "@/lib/history";
 import { LISTENING_PARTS, READING_PARTS, type Skill, type TestSet } from "@/lib/rl";
 import { getBuiltinSet } from "@/lib/rl-bank";
-import type { ExamResult, ExamSkill, ExamTaskResult, GradeRequest, GradeResult } from "@/lib/types";
+import type { ExamResult, ExamSkill } from "@/lib/types";
 import { ExamReport } from "./ExamReport";
 import { SpeakingSession } from "./SpeakingSession";
 import { TestRunner } from "./TestRunner";
@@ -318,49 +318,8 @@ function GradingStep({ progress, onDone }: { progress: ExamProgress; onDone: (r:
     if (started.current) return; // guard against double-running (and double-billing) in dev
     started.current = true;
 
-    async function grade(req: GradeRequest | undefined): Promise<{ result: GradeResult; level: number | null }> {
-      if (!req || countWords(req.response) < 10) {
-        return {
-          level: 1,
-          result: { mode: "offline", reason: "Fewer than 10 words, so this task was counted as level 1 (minimal).", checks: [] },
-        };
-      }
-      try {
-        const res = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(req) });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Scoring failed.");
-        const result = data as GradeResult;
-        return { result, level: result.mode === "ai" ? result.feedback.overallLevel : null };
-      } catch (e) {
-        return { level: null, result: { mode: "offline", reason: e instanceof Error ? e.message : "Scoring failed.", checks: [] } };
-      }
-    }
-
     (async () => {
-      const out: ExamTaskResult[] = new Array(items.length);
-      let next = 0;
-      let finished = 0;
-      await Promise.all(
-        Array.from({ length: 4 }, async () => {
-          while (next < items.length) {
-            const i = next++;
-            const it = items[i];
-            const req = progress.responses[it.key];
-            const { result, level } = await grade(req);
-            out[i] = {
-              kind: it.kind,
-              taskId: it.task.id,
-              taskName: `${SKILL_LABEL[it.kind]} Task ${it.task.number}: ${it.task.name}`,
-              promptTitle: it.prompt.title,
-              response: req?.response ?? "",
-              durationSec: req?.durationSec,
-              level,
-              result,
-            };
-            setDone(++finished);
-          }
-        }),
-      );
+      const out = await scoreTasks(items, progress.responses, setDone);
       const writing = out.filter((t) => t.kind === "writing");
       const speaking = out.filter((t) => t.kind === "speaking");
       const { levels, average } = computeLevels(progress.listening!, progress.reading!, writing, speaking);

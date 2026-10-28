@@ -14,6 +14,16 @@ export default function WritingIndex() {
           Rated on Content/Coherence, Vocabulary, Readability and Task Fulfillment.
         </p>
       </div>
+      <Link href="/writing/full" className="group block">
+        <Card className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-accent/40 bg-accent-soft transition group-hover:border-accent">
+          <div>
+            <p className="font-semibold text-lg group-hover:text-accent">Full Writing test</p>
+            <p className="text-sm text-muted mt-1">Both tasks back to back, 53 minutes, with an estimated CELPIP level.</p>
+          </div>
+          <span className="text-accent font-medium shrink-0">Start →</span>
+        </Card>
+      </Link>
+
       <div className="grid md:grid-cols-2 gap-5">
         {WRITING_TASKS.map((t) => (
           <Link key={t.id} href={`/writing/${t.id}`} className="group">

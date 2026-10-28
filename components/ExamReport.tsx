@@ -9,7 +9,7 @@ import { ObjectiveReview } from "./ObjectiveReview";
 import { Panel } from "./TestParts";
 import { btn } from "./ui";
 
-function TaskReview({ task }: { task: ExamTaskResult }) {
+export function TaskReview({ task }: { task: ExamTaskResult }) {
   return (
     <details className="group rounded-xl border border-line bg-surface">
       <summary className="cursor-pointer list-none p-5 flex items-center justify-between gap-3">

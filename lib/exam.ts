@@ -1,8 +1,9 @@
 // Full CELPIP-General mock exam: content, step sequence, saved progress and scoring.
-import { SPEAKING_TASKS, WRITING_TASKS, type Prompt } from "./celpip";
+import { SPEAKING_TASKS, WRITING_TASKS, type Kind, type Prompt } from "./celpip";
+import { countWords } from "./checks";
 import { LISTENING_PARTS, READING_PARTS, type TestSet } from "./rl";
 import { getBuiltinSet } from "./rl-bank";
-import type { ExamSkill, ExamTaskResult, GradeRequest, ObjectiveResult } from "./types";
+import type { ExamSkill, ExamTaskResult, GradeRequest, GradeResult, ObjectiveResult } from "./types";
 
 export interface ExamContent {
   source: "builtin" | "ai";
@@ -117,7 +118,7 @@ export function parseProgress(raw: string | null): ExamProgress | null {
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
-function mean(levels: (number | null)[]) {
+export function mean(levels: (number | null)[]) {
   const xs = levels.filter((x): x is number => x !== null);
   return xs.length ? round1(xs.reduce((a, b) => a + b, 0) / xs.length) : null;
 }
@@ -135,4 +136,62 @@ export function computeLevels(
     speaking: mean(speaking.map((t) => t.level)),
   };
   return { levels, average: mean(SKILL_ORDER.map((s) => levels[s])) };
+}
+
+export interface TaskToScore {
+  key: string;
+  kind: Kind;
+  task: { id: string; number: number; name: string };
+  prompt: Prompt;
+}
+
+async function gradeOne(req: GradeRequest | undefined): Promise<{ result: GradeResult; level: number | null }> {
+  if (!req || countWords(req.response) < 10) {
+    return {
+      level: 1,
+      result: { mode: "offline", reason: "Fewer than 10 words, so this task was counted as level 1 (minimal).", checks: [] },
+    };
+  }
+  try {
+    const res = await fetch("/api/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(req) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Scoring failed.");
+    const result = data as GradeResult;
+    return { result, level: result.mode === "ai" ? result.feedback.overallLevel : null };
+  } catch (e) {
+    return { level: null, result: { mode: "offline", reason: e instanceof Error ? e.message : "Scoring failed.", checks: [] } };
+  }
+}
+
+/** Scores writing/speaking answers 4 at a time, keeping the input order. */
+export async function scoreTasks(
+  items: TaskToScore[],
+  responses: Record<string, GradeRequest>,
+  onProgress: (done: number) => void,
+): Promise<ExamTaskResult[]> {
+  const out: ExamTaskResult[] = new Array(items.length);
+  let next = 0;
+  let finished = 0;
+  await Promise.all(
+    Array.from({ length: 4 }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        const it = items[i];
+        const req = responses[it.key];
+        const { result, level } = await gradeOne(req);
+        out[i] = {
+          kind: it.kind,
+          taskId: it.task.id,
+          taskName: `${SKILL_LABEL[it.kind]} Task ${it.task.number}: ${it.task.name}`,
+          promptTitle: it.prompt.title,
+          response: req?.response ?? "",
+          durationSec: req?.durationSec,
+          level,
+          result,
+        };
+        onProgress(++finished);
+      }
+    }),
+  );
+  return out;
 }

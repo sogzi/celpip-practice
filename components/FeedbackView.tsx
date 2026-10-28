@@ -10,7 +10,7 @@ import { Card } from "./ui";
 export function FeedbackView({ result }: { result: GradeResult }) {
   const [showRewrite, setShowRewrite] = useState(false);
   if (result.mode === "objective") return <ObjectiveReview result={result} />;
-  if (result.mode === "exam") return null; // rendered by ExamReport
+  if (result.mode === "exam" || result.mode === "section") return null; // rendered by ExamReport / SectionReport
 
   return (
     <div className="space-y-5">

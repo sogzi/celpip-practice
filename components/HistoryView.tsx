@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FEATURES } from "@/lib/features";
 import { attemptLevel, deleteAttempt } from "@/lib/history";
 import { ExamReport } from "./ExamReport";
+import { SectionReport } from "./SectionRunner";
 import type { Attempt } from "@/lib/types";
 import { FeedbackView } from "./FeedbackView";
 import { Card, btn } from "./ui";
@@ -119,7 +120,7 @@ export function HistoryView() {
                         lv ? "bg-accent-soft text-accent" : "bg-surface-2 text-muted"
                       }`}
                     >
-                      {lv === null ? "–" : a.result.mode === "exam" ? lv.toFixed(1) : lv}
+                      {lv === null ? "–" : (a.result.mode === "exam" || a.result.mode === "section") ? lv.toFixed(1) : lv}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block font-medium truncate">{a.taskName}</span>
@@ -129,6 +130,8 @@ export function HistoryView() {
                           ? `L ${fmt(a.result.levels.listening)} · R ${fmt(a.result.levels.reading)} · W ${fmt(a.result.levels.writing)} · S ${fmt(a.result.levels.speaking)}`
                           : a.result.mode === "objective"
                           ? `${a.result.correct}/${a.result.total} correct`
+                          : a.result.mode === "section"
+                          ? `Task levels ${a.result.tasks.map((t) => t.level ?? "–").join(" · ")}`
                           : `${a.wordCount} words${a.durationSec ? ` · ${Math.round(a.durationSec)}s` : ""}`}
                       </span>
                     </span>
@@ -138,13 +141,19 @@ export function HistoryView() {
                   </button>
                   {open && (
                     <div className="border-t border-line p-4 sm:p-5 space-y-5">
-                      {a.result.mode !== "objective" && (
+                      {a.result.mode !== "objective" && a.result.mode !== "section" && (
                         <details>
                           <summary className="cursor-pointer text-sm font-medium">Your {a.kind === "writing" ? "response" : "transcript"}</summary>
                           <p className="mt-3 whitespace-pre-wrap leading-relaxed text-[15px]">{a.response}</p>
                         </details>
                       )}
-                      {a.result.mode === "exam" ? <ExamReport result={a.result} showActions={false} /> : <FeedbackView result={a.result} />}
+                      {a.result.mode === "exam" ? (
+                        <ExamReport result={a.result} showActions={false} />
+                      ) : a.result.mode === "section" ? (
+                        <SectionReport result={a.result} />
+                      ) : (
+                        <FeedbackView result={a.result} />
+                      )}
                       <button className="text-sm text-muted hover:text-accent" onClick={() => deleteAttempt(a.id)}>
                         Delete this attempt
                       </button>

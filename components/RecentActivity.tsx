@@ -21,7 +21,7 @@ export function RecentActivity() {
               <p className="text-xs text-muted truncate">{a.taskName}</p>
               <p className="mt-1 font-medium truncate">{a.promptTitle}</p>
               <p className="mt-3 text-2xl font-semibold tabular-nums">
-                {lv === null ? "–" : a.result.mode === "exam" ? lv.toFixed(1) : lv}
+                {lv === null ? "–" : (a.result.mode === "exam" || a.result.mode === "section") ? lv.toFixed(1) : lv}
                 <span className="text-sm font-normal text-muted"> {lv ? "/ 12" : "not scored"}</span>
               </p>
             </Card>
