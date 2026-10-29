@@ -16,7 +16,7 @@ import { useRecorder } from "./useRecorder";
 
 type Phase = "ready" | "prep" | "speaking" | "review" | "grading" | "done";
 
-function TimerBar({ label, remaining, total, tone }: { label: string; remaining: number; total: number; tone: "prep" | "rec" }) {
+function TimerBar({ label, remaining, total, tone, level }: { label: string; remaining: number; total: number; tone: "prep" | "rec"; level?: number }) {
   return (
     <Card className="p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3">
@@ -32,6 +32,14 @@ function TimerBar({ label, remaining, total, tone }: { label: string; remaining:
           style={{ width: `${(remaining / total) * 100}%` }}
         />
       </div>
+      {level !== undefined && (
+        <div className="mt-3 flex items-center gap-3 text-xs text-muted">
+          <span>Mic</span>
+          <div className="h-1.5 w-32 rounded-full bg-surface-2 overflow-hidden" role="meter" aria-label="Microphone level" aria-valuenow={Math.round(level * 100)} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full rounded-full bg-good transition-[width] duration-100" style={{ width: `${level * 100}%` }} />
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
@@ -86,9 +94,13 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
     setPhase("ready");
   }
 
+  const transcript = `${recorder.transcript} ${recorder.interim}`.trim();
+  const words = countWords(transcript);
+
   async function submit() {
+    if (exam && words < 10 && !confirm(`Your transcript has ${words} word${words === 1 ? "" : "s"}, so this task will be scored as level 1. Continue anyway?`)) return;
     const body: GradeRequest = {
-      kind: "speaking", taskId, promptId, prompt: promptId.startsWith("ai-") ? prompt : undefined, response: recorder.transcript, choice: needsChoice ? choice ?? "" : undefined,
+      kind: "speaking", taskId, promptId, prompt: promptId.startsWith("ai-") ? prompt : undefined, response: transcript, choice: needsChoice ? choice ?? "" : undefined,
       durationSec: duration,
     };
     if (exam) {
@@ -107,7 +119,7 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
       saveAttempt({
         id: newId(), createdAt: new Date().toISOString(), kind: "speaking", taskId,
         taskName: `Speaking Task ${task.number}: ${task.name}`, promptTitle: prompt.title,
-        response: recorder.transcript, choice, wordCount: countWords(recorder.transcript),
+        response: transcript, choice, wordCount: words,
         durationSec: duration, result: data,
       });
     } catch (e) {
@@ -159,7 +171,7 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
           )}
           {phase === "speaking" && (
             <div className="space-y-3">
-              <TimerBar label="Recording" remaining={speakTimer.remaining} total={task.speakSeconds} tone="rec" />
+              <TimerBar label="Recording" remaining={speakTimer.remaining} total={task.speakSeconds} tone="rec" level={recorder.level} />
               <button className={btn.secondary} onClick={finishSpeaking}>Stop early</button>
             </div>
           )}
@@ -190,6 +202,27 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
             <p className="text-sm text-muted mt-1">You spoke for {Math.round(duration)} seconds.</p>
           </div>
           {recorder.audioUrl && <audio controls src={recorder.audioUrl} className="w-full" />}
+          {phase === "review" && words < 10 && (
+            <div className="rounded-lg bg-warn-soft text-warn p-3 text-sm leading-relaxed">
+              {recorder.silent ? (
+                <>
+                  <b>Your microphone didn&apos;t pick up any sound.</b> Check that it isn&apos;t muted and that the right microphone is
+                  selected in your browser, then record again.
+                </>
+              ) : recorder.transcriptError ? (
+                <>
+                  <b>Automatic transcription didn&apos;t work.</b> {recorder.transcriptError} Play your recording and type what you said
+                  below, or try Chrome or Edge.
+                </>
+              ) : recorder.supportsTranscription ? (
+                <>
+                  <b>No words were picked up.</b> Play your recording to check it, then type what you said below or record again.
+                </>
+              ) : (
+                <>Type what you said below. At least 10 words are needed for scoring.</>
+              )}
+            </div>
+          )}
           <div>
             <label htmlFor="transcript" className="text-sm font-medium">Transcript</label>
             <p className="text-xs text-muted mt-0.5">
@@ -208,10 +241,13 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
           {needsChoice && !choice && <p className="text-sm text-warn">You didn&apos;t choose an option during preparation; this will count against Task Fulfillment.</p>}
           <div className="flex flex-wrap gap-2">
             {exam ? (
-              <button className={btn.primary} onClick={submit}>Submit and continue →</button>
+              <>
+                <button className={btn.primary} onClick={submit}>Submit and continue →</button>
+                {words < 10 && <button className={btn.secondary} onClick={() => reset()}>Record again</button>}
+              </>
             ) : (
               <>
-                <button className={btn.primary} onClick={submit} disabled={phase === "grading" || countWords(recorder.transcript) < 10}>
+                <button className={btn.primary} onClick={submit} disabled={phase === "grading" || words < 10}>
                   {phase === "grading" ? "Scoring…" : "Submit for scoring"}
                 </button>
                 <button className={btn.secondary} onClick={() => reset()} disabled={phase === "grading"}>Re-record</button>
@@ -219,7 +255,7 @@ export function SpeakingSession({ taskId, exam }: { taskId: string; exam?: ExamH
             )}
           </div>
           {!exam && <ScoreQuota />}
-          {countWords(recorder.transcript) < 10 && phase === "review" && (
+          {!exam && words < 10 && phase === "review" && (
             <p className="text-sm text-muted">At least 10 words are needed for scoring.</p>
           )}
           {error && <p className="text-sm text-accent">{error}</p>}
